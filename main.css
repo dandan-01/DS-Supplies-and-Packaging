@@ -1,0 +1,88 @@
+body {
+    font-family: Cambria, serif;
+    text-align: center;
+  }
+  
+  #header {
+    display: flex;
+    justify-content: center;
+    height: 100px;
+    margin-bottom: 20px;
+    background-color: brown;
+    color: white;
+  }
+  
+  #logotitle {
+    display: flex;
+    align-items: center;
+  }
+  
+  #logotitle img {
+    margin-right: 10px;
+    display: block;
+    width: 60px;
+    height: auto;
+  }
+
+  #logotitle a {
+    color: white;
+    text-decoration: none;
+  }
+  
+  #nav {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    gap: 20px;
+  }
+  
+  #nav a {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: large;
+    text-decoration: underline;
+    padding: 5px 10px; /* Add padding around links to show white background during hover */
+    border-radius: 10px;
+  }
+
+  #nav a:hover{
+    background-color: white; 
+    color: brown;
+    transition: 0.3s;
+    opacity: 0.7;
+  }
+
+  #blogs {
+    margin: 0 auto;
+    width: 80%;
+  }
+  
+  #blogs ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  #blogs li {
+    margin-bottom: 10px;
+    border-bottom: 3px solid #ccc;
+    padding-bottom: 10px;
+    
+  }
+
+  .blog-header {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    align-items: center;
+    height: 40px;
+}
+
+.blog-header h2 {
+    font-weight: bold;
+    color: brown;
+}
+
+.blog-content {
+    padding: 20px;
+    text-align: justify;
+}
