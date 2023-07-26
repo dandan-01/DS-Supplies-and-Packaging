@@ -1,0 +1,555 @@
+[33mcommit c9f2bf59b9befbc5f822b1e63c8965a0dfca10c0[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m)[m
+Author: Dani <sanchezdanilyn@gmail.com>
+Date:   Tue Jul 25 18:52:14 2023 -0500
+
+    first commit
+
+[1mdiff --git a/authenticate.php b/authenticate.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..ea8f765[m
+[1m--- /dev/null[m
+[1m+++ b/authenticate.php[m
+[36m@@ -0,0 +1,20 @@[m
+[32m+[m[32m <?php[m
+[32m+[m
+[32m+[m[32m  define('ADMIN_LOGIN','wally');[m
+[32m+[m
+[32m+[m[32m  define('ADMIN_PASSWORD','mypass');[m
+[32m+[m
+[32m+[m[32m  if (!isset($_SERVER['PHP_AUTH_USER']) || !isset($_SERVER['PHP_AUTH_PW'])[m
+[32m+[m
+[32m+[m[32m      || ($_SERVER['PHP_AUTH_USER'] != ADMIN_LOGIN)[m
+[32m+[m
+[32m+[m[32m      || ($_SERVER['PHP_AUTH_PW'] != ADMIN_PASSWORD)) {[m
+[32m+[m
+[32m+[m[32m    header('HTTP/1.1 401 Unauthorized');[m
+[32m+[m
+[32m+[m[32m    header('WWW-Authenticate: Basic realm="Our Blog"');[m
+[32m+[m
+[32m+[m[32m    exit("Access Denied: Username and password required.");[m
+[32m+[m
+[32m+[m[32m  }[m
+[32m+[m[32m?>[m
+\ No newline at end of file[m
+[1mdiff --git a/connect.php b/connect.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..0d8e6f7[m
+[1m--- /dev/null[m
+[1m+++ b/connect.php[m
+[36m@@ -0,0 +1,19 @@[m
+[32m+[m[32m <?php[m
+[32m+[m[32m     define('DB_DSN','mysql:host=localhost;dbname=serverside;charset=utf8');[m
+[32m+[m[32m     define('DB_USER','serveruser');[m
+[32m+[m[32m     define('DB_PASS','gorgonzola7!');[m[41m     [m
+[32m+[m[41m     [m
+[32m+[m[32m    //  PDO is PHP Data Objects[m
+[32m+[m[32m    //  mysqli <-- BAD.[m[41m [m
+[32m+[m[32m    //  PDO <-- GOOD.[m
+[32m+[m[32m     try {[m
+[32m+[m[32m         // Try creating new PDO connection to MySQL.[m
+[32m+[m[32m         $db = new PDO(DB_DSN, DB_USER, DB_PASS);[m
+[32m+[m[32m         //,array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION)[m
+[32m+[m[32m     } catch (PDOException $e) {[m
+[32m+[m[32m         print "Error: " . $e->getMessage();[m
+[32m+[m[32m         die(); // Force execution to stop on errors.[m
+[32m+[m[32m         // When deploying to production you should handle this[m
+[32m+[m[32m         // situation more gracefully. ¯\_(ツ)_/¯[m
+[32m+[m[32m     }[m
+[32m+[m[32m ?>[m
+\ No newline at end of file[m
+[1mdiff --git a/edit.php b/edit.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..07298fc[m
+[1m--- /dev/null[m
+[1m+++ b/edit.php[m
+[36m@@ -0,0 +1,112 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32m/*******w********[m[41m [m
+[32m+[m[41m    [m
+[32m+[m[32m    Name: Danilyn Sanchez[m
+[32m+[m[32m    Date: July 25, 2023[m
+[32m+[m[32m    Description: Edit post page[m
+[32m+[m
+[32m+[m[32m****************/[m
+[32m+[m
+[32m+[m[32mrequire('connect.php');[m
+[32m+[m[32mrequire('authenticate.php');[m
+[32m+[m
+[32m+[m[32m// Fetch the blog post details[m[41m [m
+[32m+[m[32m$post_id = $_GET['id'];[m
+[32m+[m
+[32m+[m[32m$query = "SELECT * FROM blogpost WHERE id = :post_id";[m
+[32m+[m[32m$statement = $db->prepare($query);[m
+[32m+[m[32m$statement->bindValue(':post_id', $post_id);[m
+[32m+[m[32m$statement->execute();[m
+[32m+[m
+[32m+[m[32m$post = $statement->fetch(PDO::FETCH_ASSOC);[m
+[32m+[m
+[32m+[m[32m// Handle the form submission[m
+[32m+[m[32mif ($_SERVER['REQUEST_METHOD'] === 'POST') {[m
+[32m+[m[32m    if (isset($_POST['update'])) {[m
+[32m+[m[32m        // Update button clicked[m
+[32m+[m[32m        if (!empty($_POST['title']) && !empty($_POST['content'])) {[m
+[32m+[m[32m            // Sanitize and filter user input[m
+[32m+[m[32m            $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);[m
+[32m+[m[32m            $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);[m
+[32m+[m
+[32m+[m[32m            // Build SQL query and bind to the above sanitized values.[m
+[32m+[m[32m            $query = "UPDATE blogpost SET title = :title, content = :content WHERE id = :post_id";[m
+[32m+[m
+[32m+[m[32m            $statement = $db->prepare($query);[m
+[32m+[m
+[32m+[m[32m            // Bind values to the parameters[m
+[32m+[m[32m            $statement->bindValue(':title', $title);[m
+[32m+[m[32m            $statement->bindValue(':content', $content);[m
+[32m+[m[32m            $statement->bindValue(':post_id', $post_id);[m
+[32m+[m
+[32m+[m[32m            // Execute the UPDATE.[m
+[32m+[m[32m            if ($statement->execute()) {[m
+[32m+[m[32m                echo "Post updated successfully.";[m
+[32m+[m[32m                header('Location: index.php');[m
+[32m+[m[32m                exit;[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m                echo "Failed to update the post.";[m
+[32m+[m[32m            }[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            echo "Please provide a title and content for the post.";[m
+[32m+[m[32m        }[m
+[32m+[m[32m    } elseif (isset($_POST['delete'])) {[m
+[32m+[m[32m        // Delete button clicked[m
+[32m+[m[32m        $query = "DELETE FROM blogpost WHERE id = :post_id";[m
+[32m+[m[32m        $statement = $db->prepare($query);[m
+[32m+[m[32m        $statement->bindValue(':post_id', $post_id);[m
+[32m+[m
+[32m+[m[32m        if ($statement->execute()) {[m
+[32m+[m[32m            echo "Post deleted successfully.";[m
+[32m+[m[32m            header('Location: index.php');[m
+[32m+[m[32m            exit;[m
+[32m+[m[32m        } else {[m
+[32m+[m[32m            echo "Failed to delete the post.";[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m[32m?>[m
+[32m+[m
+[32m+[m[32m<!DOCTYPE html>[m
+[32m+[m[32m<html>[m
+[32m+[m[32m<head>[m
+[32m+[m[32m    <link rel="stylesheet" href="main.css">[m
+[32m+[m[32m    <title>DS Supplies and Packaging - Edit Blog Post</title>[m
+[32m+[m[32m</head>[m
+[32m+[m[32m<body>[m
+[32m+[m[32m    <div id="header">[m
+[32m+[m[32m    <div id="logotitle">[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <img src="imgs/box.jpg" alt="Box logo">[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <h1>DS Supplies and Packaging</h1>[m
+[32m+[m[32m            </a>[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m        <div id="nav">[m
+[32m+[m[32m            <a href="index.php">Home</a>[m
+[32m+[m[32m            <a href="new_post.php">New Post</a>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <h1>Edit Blog Post</h1>[m
+[32m+[m
+[32m+[m[32m    <?php if (isset($error)): ?>[m
+[32m+[m[32m        <p><?php echo $error; ?></p>[m
+[32m+[m[32m    <?php endif; ?>[m
+[32m+[m
+[32m+[m[32m    <form method="POST">[m
+[32m+[m[32m        <label for="title">Title:</label><br>[m
+[32m+[m[32m        <input type="text" id="title" name="title" value="<?= $post['title'] ?? ''; ?>" required><br>[m
+[32m+[m
+[32m+[m[32m        <label for="content">Content:</label><br>[m
+[32m+[m[32m        <textarea id="content" name="content" rows="4" cols="50" required><?= $post['content'] ?? ''; ?></textarea><br>[m
+[32m+[m
+[32m+[m[32m        <input type="submit" name="update" value="Update Blog">[m
+[32m+[m[32m        <input type="submit" name="delete" value="Delete Blog" onclick="return confirm('Are you sure you want to delete this post?')">[m
+[32m+[m[32m    </form>[m
+[32m+[m[32m</body>[m
+[32m+[m[32m</html>[m
+\ No newline at end of file[m
+[1mdiff --git a/imgs/box.jpg b/imgs/box.jpg[m
+[1mnew file mode 100644[m
+[1mindex 0000000..3857684[m
+Binary files /dev/null and b/imgs/box.jpg differ
+[1mdiff --git a/index.php b/index.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..e22cb37[m
+[1m--- /dev/null[m
+[1m+++ b/index.php[m
+[36m@@ -0,0 +1,95 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32m/*******w********[m[41m [m
+[32m+[m[41m    [m
+[32m+[m[32m    Name: Danilyn Sanchez[m
+[32m+[m[32m    Date: July 25, 2023[m
+[32m+[m[32m    Description: Simple Content Management System for a DS Supplies and Packaging.[m
+[32m+[m
+[32m+[m[32m****************/[m
+[32m+[m
+[32m+[m[32mrequire('connect.php');[m
+[32m+[m
+[32m+[m[32m// SQL is written as a String.[m
+[32m+[m[32m$query = "  SELECT *[m[41m [m
+[32m+[m[32m            FROM blogpost[m[41m [m
+[32m+[m[32m            ORDER BY id DESC";[m
+[32m+[m
+[32m+[m[32m// A PDO::Statement is prepared from the query.[m
+[32m+[m[32m$statement = $db->prepare($query);[m
+[32m+[m
+[32m+[m[32m// Execution on the DB server is delayed until we execute().[m
+[32m+[m[32m$statement->execute();[m[41m [m
+[32m+[m
+[32m+[m[32m// Check if there are any rows returned[m
+[32m+[m[32mif ($statement->rowCount() === 0) {[m
+[32m+[m[32m    $error = "<p>No blog posts found.</p>";[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mfunction shorten200($content, $maxLength = 200) {[m
+[32m+[m[32m    if (strlen($content) > $maxLength) {[m
+[32m+[m[32m        $excerpt = substr($content, 0, $maxLength) . '...';[m
+[32m+[m[32m        return $excerpt;[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        return $content;[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m?>[m
+[32m+[m
+[32m+[m[32m<!DOCTYPE html>[m
+[32m+[m[32m<html lang="en">[m
+[32m+[m[32m<head>[m
+[32m+[m[32m    <meta charset="UTF-8">[m
+[32m+[m[32m    <meta http-equiv="X-UA-Compatible" content="IE=edge">[m
+[32m+[m[32m    <meta name="viewport" content="width=device-width, initial-scale=1.0">[m
+[32m+[m[32m    <link rel="stylesheet" href="main.css" type="text/css">[m
+[32m+[m[32m    <title>DS Supplies and Packaging</title>[m
+[32m+[m[32m</head>[m
+[32m+[m[32m<body>[m
+[32m+[m[32m    <!-- Remember that alternative syntax is good and html inside php is bad -->[m
+[32m+[m[32m    <div id="header">[m
+[32m+[m[32m        <div id="logotitle">[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <img src="imgs/box.jpg" alt="Box logo">[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <h1>DS Supplies and Packaging</h1>[m
+[32m+[m[32m            </a>[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m        <div id="nav">[m
+[32m+[m[32m            <a href="index.php">Home</a>[m
+[32m+[m[32m            <a href="new_post.php">New Post</a>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <h2>Showing Recent Blog Posts</h2>[m
+[32m+[m
+[32m+[m[32m    <div id="blogs">[m
+[32m+[m[32m    <ul>[m
+[32m+[m[32m        <?php foreach ($statement as $blogpost): ?>[m
+[32m+[m[32m        <li>[m
+[32m+[m[32m            <div class="blog-header">[m
+[32m+[m[32m                <h2><a href="post.php?id=<?= $blogpost['id']; ?>"><?= $blogpost['title']; ?></a></h2>[m
+[32m+[m[32m                <a href="edit.php?id=<?= $blogpost['id']; ?>">edit</a>[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m            <div class="blog-timestamp">[m
+[32m+[m[32m                <?= date("F d, Y, g:i a", strtotime($blogpost['timestamp'])); ?>[m
+[32m+[m[32m            </div>[m
+[32m+[m
+[32m+[m[32m            <div class="blog-content">[m
+[32m+[m[32m                <?= shorten200($blogpost['content']); ?>[m
+[32m+[m[32m                <?php if (strlen($blogpost['content']) > 200): ?>[m
+[32m+[m[32m                        <a href="post.php?id=<?= $blogpost['id']; ?>">Read Full Post</a>[m
+[32m+[m[32m                <?php endif; ?>[m
+[32m+[m[32m            </div>[m
+[32m+[m[32m        </li>[m
+[32m+[m[32m        <?php endforeach; ?>[m
+[32m+[m[32m    </ul>[m
+[32m+[m[32m</div>[m
+[32m+[m[41m    [m
+[32m+[m[32m</body>[m
+[32m+[m[32m</html>[m
+\ No newline at end of file[m
+[1mdiff --git a/main.css b/main.css[m
+[1mnew file mode 100644[m
+[1mindex 0000000..a1e7f07[m
+[1m--- /dev/null[m
+[1m+++ b/main.css[m
+[36m@@ -0,0 +1,88 @@[m
+[32m+[m[32mbody {[m
+[32m+[m[32m    font-family: Cambria, serif;[m
+[32m+[m[32m    text-align: center;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #header {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    height: 100px;[m
+[32m+[m[32m    margin-bottom: 20px;[m
+[32m+[m[32m    background-color: brown;[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #logotitle {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #logotitle img {[m
+[32m+[m[32m    margin-right: 10px;[m
+[32m+[m[32m    display: block;[m
+[32m+[m[32m    width: 60px;[m
+[32m+[m[32m    height: auto;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  #logotitle a {[m
+[32m+[m[32m    color: white;[m
+[32m+[m[32m    text-decoration: none;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #nav {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    padding-left: 20px;[m
+[32m+[m[32m    gap: 20px;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #nav a {[m
+[32m+[m[32m    text-decoration: none;[m
+[32m+[m[32m    color: #ffffff;[m
+[32m+[m[32m    font-size: large;[m
+[32m+[m[32m    text-decoration: underline;[m
+[32m+[m[32m    padding: 5px 10px; /* Add padding around links to show white background during hover */[m
+[32m+[m[32m    border-radius: 10px;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  #nav a:hover{[m
+[32m+[m[32m    background-color: white;[m[41m [m
+[32m+[m[32m    color: brown;[m
+[32m+[m[32m    transition: 0.3s;[m
+[32m+[m[32m    opacity: 0.7;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  #blogs {[m
+[32m+[m[32m    margin: 0 auto;[m
+[32m+[m[32m    width: 80%;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #blogs ul {[m
+[32m+[m[32m    list-style: none;[m
+[32m+[m[32m    padding: 0;[m
+[32m+[m[32m  }[m
+[32m+[m[41m  [m
+[32m+[m[32m  #blogs li {[m
+[32m+[m[32m    margin-bottom: 10px;[m
+[32m+[m[32m    border-bottom: 3px solid #ccc;[m
+[32m+[m[32m    padding-bottom: 10px;[m
+[32m+[m[41m    [m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  .blog-header {[m
+[32m+[m[32m    display: flex;[m
+[32m+[m[32m    justify-content: center;[m
+[32m+[m[32m    gap: 30px;[m
+[32m+[m[32m    align-items: center;[m
+[32m+[m[32m    height: 40px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.blog-header h2 {[m
+[32m+[m[32m    font-weight: bold;[m
+[32m+[m[32m    color: brown;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.blog-content {[m
+[32m+[m[32m    padding: 20px;[m
+[32m+[m[32m    text-align: justify;[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/new_post.php b/new_post.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..f76b15a[m
+[1m--- /dev/null[m
+[1m+++ b/new_post.php[m
+[36m@@ -0,0 +1,79 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32m/*******w********[m[41m [m
+[32m+[m[41m    [m
+[32m+[m[32m    Name: Danilyn Sanchez[m
+[32m+[m[32m    Date: July 25, 2023[m
+[32m+[m[32m    Description: New post page.[m
+[32m+[m
+[32m+[m[32m****************/[m
+[32m+[m
+[32m+[m[32mrequire('connect.php');[m
+[32m+[m[32mrequire('authenticate.php');[m
+[32m+[m
+[32m+[m[32mif ($_POST && !empty($_POST['title']) && !empty($_POST['content'])) {[m
+[32m+[m[32m    //  Sanitize and filter user input[m
+[32m+[m[32m    $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);[m
+[32m+[m[32m    $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);[m
+[32m+[m[41m    [m
+[32m+[m[32m    //  Build SQL query and bind to the above sanitized values.[m
+[32m+[m[32m    $query = "  INSERT INTO blogpost (title, content)[m[41m [m
+[32m+[m[32m                VALUES (:title, :content)";[m
+[32m+[m[41m    [m
+[32m+[m[32m    $statement = $db->prepare($query);[m
+[32m+[m[41m    [m
+[32m+[m[32m    //  Bind values to the parameters[m
+[32m+[m[32m    $statement->bindValue(':title', $title);[m
+[32m+[m[32m    $statement->bindValue(':content', $content);[m
+[32m+[m[41m    [m
+[32m+[m[32m    //  Execute the INSERT.[m
+[32m+[m[32m    //  execute() will check for possible SQL injection and remove if necessary[m
+[32m+[m[32m    if($statement->execute()) {[m
+[32m+[m[32m        echo "Success";[m
+[32m+[m[32m        header('Location: index.php');[m
+[32m+[m[32m        exit;[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
+[32m+[m[32m?>[m
+[32m+[m
+[32m+[m[32m<!DOCTYPE html>[m
+[32m+[m[32m<html>[m
+[32m+[m[32m<head>[m
+[32m+[m[32m    <link rel="stylesheet" href="main.css">[m
+[32m+[m[32m  <title>DS Supplies and Packaging - New Blog Post</title>[m
+[32m+[m[32m</head>[m
+[32m+[m[32m<body>[m
+[32m+[m[32m    <div id="header">[m
+[32m+[m[32m    <div id="logotitle">[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <img src="imgs/box.jpg" alt="Box logo">[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <h1>DS Supplies and Packaging</h1>[m
+[32m+[m[32m            </a>[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m        <div id="nav">[m
+[32m+[m[32m            <a href="index.php">Home</a>[m
+[32m+[m[32m            <a href="new_post.php">New Post</a>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <h1>New Blog Post</h1>[m
+[32m+[m
+[32m+[m[32m    <?php if (isset($error)): ?>[m
+[32m+[m[32m        <p><?php echo $error; ?></p>[m
+[32m+[m[32m    <?php endif; ?>[m
+[32m+[m
+[32m+[m[32m    <form method="POST">[m
+[32m+[m[32m        <label for="title">Title:</label><br>[m
+[32m+[m[32m        <input type="text" id="title" name="title" required><br>[m
+[32m+[m
+[32m+[m[32m        <label for="content">Content:</label><br>[m
+[32m+[m[32m        <textarea id="content" name="content" rows="4" cols="50" required></textarea><br>[m
+[32m+[m
+[32m+[m[32m        <input type="submit" value="Submit">[m
+[32m+[m[32m    </form>[m
+[32m+[m[32m</body>[m
+[32m+[m[32m</html>[m
+\ No newline at end of file[m
+[1mdiff --git a/post.php b/post.php[m
+[1mnew file mode 100644[m
+[1mindex 0000000..fa77d57[m
+[1m--- /dev/null[m
+[1m+++ b/post.php[m
+[36m@@ -0,0 +1,83 @@[m
+[32m+[m[32m<?php[m
+[32m+[m
+[32m+[m[32m/*******w********[m[41m [m
+[32m+[m[41m    [m
+[32m+[m[32m    Name: Danilyn Sanchez[m
+[32m+[m[32m    Date: July 25, 2023[m
+[32m+[m[32m    Description: Blogpost page.[m
+[32m+[m
+[32m+[m[32m****************/[m
+[32m+[m
+[32m+[m[32mrequire('connect.php');[m
+[32m+[m
+[32m+[m[32m// Function to sanitize and filter input values[m
+[32m+[m[32mfunction sanitizeInput($input)[m
+[32m+[m[32m{[m
+[32m+[m[32m    return filter_var(trim($input), FILTER_SANITIZE_FULL_SPECIAL_CHARS);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m// Check if the 'id' parameter is present in the URL[m
+[32m+[m[32mif (isset($_GET['id'])) {[m
+[32m+[m[32m    // Sanitize and filter the 'id' parameter as an integer[m
+[32m+[m[32m    $postId = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);[m
+[32m+[m
+[32m+[m[32m    // Build the SQL query to retrieve the blog post with the specified ID[m
+[32m+[m[32m    $query = "SELECT * FROM blogpost WHERE id = :id";[m
+[32m+[m[32m    $statement = $db->prepare($query);[m
+[32m+[m
+[32m+[m[32m    // Bind the sanitized ID value to the query parameter[m
+[32m+[m[32m    $statement->bindValue(':id', $postId);[m
+[32m+[m
+[32m+[m[32m    // Execute the query[m
+[32m+[m[32m    $statement->execute();[m
+[32m+[m
+[32m+[m[32m    // Fetch the blog post as an associative array[m
+[32m+[m[32m    $post = $statement->fetch(PDO::FETCH_ASSOC);[m
+[32m+[m
+[32m+[m[32m    // Check if a post was found[m
+[32m+[m[32m    if ($post) {[m
+[32m+[m[32m        $title = $post['title'];[m
+[32m+[m[32m        $timestamp = date("F d, Y, g:i a", strtotime($post['timestamp'])); // Format the timestamp[m
+[32m+[m[32m        $content = $post['content'];[m
+[32m+[m[32m    } else {[m
+[32m+[m[32m        // If the post is not found, redirect to index.php[m
+[32m+[m[32m        header('Location: index.php');[m
+[32m+[m[32m        exit;[m
+[32m+[m[32m    }[m
+[32m+[m[32m} else {[m
+[32m+[m[32m    // If 'id' parameter is missing, redirect to index.php[m
+[32m+[m[32m    header('Location: index.php');[m
+[32m+[m[32m    exit;[m
+[32m+[m[32m}[m
+[32m+[m[32m?>[m
+[32m+[m
+[32m+[m[32m<!DOCTYPE html>[m
+[32m+[m[32m<html>[m
+[32m+[m[32m<head>[m
+[32m+[m[32m    <link rel="stylesheet" href="main.css">[m
+[32m+[m[32m    <title>DS Supplies and Packaging - <?= $post['title'] ?></title>[m
+[32m+[m[32m</head>[m
+[32m+[m[32m<body>[m
+[32m+[m[32m    <div id="header">[m
+[32m+[m[32m    <div id="logotitle">[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <img src="imgs/box.jpg" alt="Box logo">[m
+[32m+[m[32m            </a>[m
+[32m+[m
+[32m+[m[32m            <a href="index.php">[m
+[32m+[m[32m                <h1>DS Supplies and Packaging</h1>[m
+[32m+[m[32m            </a>[m
+[32m+[m[32m        </div>[m
+[32m+[m
+[32m+[m[32m        <div id="nav">[m
+[32m+[m[32m            <a href="index.php">Home</a>[m
+[32m+[m[32m            <a href="new_post.php">New Post</a>[m
+[32m+[m[32m        </div>[m
+[32m+[m[32m    </div>[m
+[32m+[m
+[32m+[m[32m    <h1><?= $title; ?></h1>[m
+[32m+[m[32m    <p><?= $timestamp; ?></p>[m
+[32m+[m[32m    <p class="blog-content"><?= $content; ?></p>[m
+[32m+[m[32m    <a href="edit.php?id=<?= $postId; ?>">Edit Post</a>[m
+[32m+[m[32m</body>[m
+[32m+[m[32m</html>[m
+\ No newline at end of file[m
