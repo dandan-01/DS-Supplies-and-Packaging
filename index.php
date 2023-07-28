@@ -12,7 +12,7 @@ require('connect.php');
 
 // SQL is written as a String.
 $query = "  SELECT * 
-            FROM blogpost 
+            FROM packagingsupplies 
             ORDER BY id DESC";
 
 // A PDO::Statement is prepared from the query.
@@ -23,7 +23,7 @@ $statement->execute();
 
 // Check if there are any rows returned
 if ($statement->rowCount() === 0) {
-    $error = "<p>No blog posts found.</p>";
+    $error = "<p>No products were found.</p>";
 }
 
 function shorten200($content, $maxLength = 200) {
@@ -49,6 +49,11 @@ function shorten200($content, $maxLength = 200) {
 </head>
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
+    <nav id="adminnav">
+        <h3>Welcome User!</h3>
+        <a href="add_new_item.php">Add new item</a>
+    </nav>
+
     <header>
         <div id="logotitle">
             <a href="index.php">
@@ -56,9 +61,9 @@ function shorten200($content, $maxLength = 200) {
             </a>
 
             <a href="index.php">
-                <h1>Boxed N Loaded</h1>
+                <h1>Boxed N' Loaded</h1>
                 <br>
-                <h4><i>"Expertly Packed, Safely Delivered to You!"</i></h4>
+                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
             </a>
         </div>
 
@@ -74,32 +79,33 @@ function shorten200($content, $maxLength = 200) {
         </nav>
     </header>
 
-    <nav>
-            <h2>Boxes</h2>
-            <h2>Bags</h2>
-            <h2>Supplies</h2>
+    <nav id="productnav">
+        <a href="index.php"><h2>HOME</h2></a>
+        <a href=""><h2>BOXES</h2></a>
+        <a href=""><h2>PAPERBAGS</h2></a>
+        <a href=""><h2>SUPPLIES</h2></a>
     </nav>
 
-    <section>
-        <h2>Showing Recent Blog Posts</h2>
+    <section id="body">
+        <h1>Viewing all products</h1>
 
-        <div id="blogs">
+        <div id="products">
         <ul>
-            <?php foreach ($statement as $blogpost): ?>
+            <?php foreach ($statement as $product): ?>
             <li>
-                <div class="blog-header">
-                    <h2><a href="post.php?id=<?= $blogpost['id']; ?>"><?= $blogpost['title']; ?></a></h2>
-                    <a href="edit.php?id=<?= $blogpost['id']; ?>">edit</a>
+                <div class="products-header">
+                    <h2><a href="post.php?id=<?= $product['id']; ?>"><?= $product['product_name']; ?></a></h2>
+                    <a href="edit.php?id=<?= $product['id']; ?>">edit</a>
                 </div>
 
-                <div class="blog-timestamp">
-                    <?= date("F d, Y, g:i a", strtotime($blogpost['timestamp'])); ?>
+                <div class="products-timestamp">
+                    <?= date("F d, Y, g:i a", strtotime($product['timestamp'])); ?>
                 </div>
 
-                <div class="blog-content">
-                    <?= shorten200($blogpost['content']); ?>
-                    <?php if (strlen($blogpost['content']) > 200): ?>
-                            <a href="post.php?id=<?= $blogpost['id']; ?>">Read Full Post</a>
+                <div class="products-content">
+                    <?= shorten200($product['product_description']); ?>
+                    <?php if (strlen($product['product_description']) > 200): ?>
+                            <a href="post.php?id=<?= $product['id']; ?>">Read Full Post</a>
                     <?php endif; ?>
                 </div>
             </li>

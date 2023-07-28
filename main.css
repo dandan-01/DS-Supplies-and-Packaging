@@ -2,6 +2,26 @@ body {
     font-family: Cambria, serif;
     margin: 0;
   }
+
+  #adminnav{
+    display: flex;
+    height: 20px;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 20em;
+    gap: 50px;
+    background-color: rgb(18, 30, 99);
+    color: #4e45a1;
+  }
+
+  #adminnav a {
+    color: rgb(131, 131, 209);
+    text-decoration: none;
+  }
+  #adminnav a:hover {
+    color: white;
+    text-decoration: underline;
+  }
   
   header {
     display: flex;
@@ -15,6 +35,7 @@ body {
   #logotitle {
     display: flex;
     align-items: center;
+    margin-bottom: 10px;
   }
   
   #logotitle img {
@@ -75,28 +96,49 @@ body {
     opacity: 0.7;
   }
 
-  section {
+  #productnav{
+    display: flex;
+    justify-content: space-evenly;
+    background-color: rgb(18, 30, 99);
+  }
+
+  #productnav a {
+    display: inline;
+    color: white;
+    text-decoration: none;
+  }
+  #productnav a:hover {
+    text-decoration: underline rgb(255, 0, 200);
+    text-decoration-thickness: 8px;
+  }
+
+  #body {
     margin: 0 20px 0 20px;
   }
 
-  #blogs {
+  h1 {
+    display: flex;
+    justify-content: center;
+  }
+
+  #products {
     margin: 0 auto;
     width: 80%;
   }
   
-  #blogs ul {
+  #products ul {
     list-style: none;
     padding: 0;
   }
   
-  #blogs li {
+  #products li {
     margin-bottom: 10px;
     border-bottom: 3px solid #ccc;
     padding-bottom: 10px;
     
   }
 
-  .blog-header {
+  .products-header {
     display: flex;
     justify-content: center;
     gap: 30px;
@@ -104,12 +146,12 @@ body {
     height: 40px;
 }
 
-.blog-header h2 {
+.products-header h2 {
     font-weight: bold;
     color: brown;
 }
 
-.blog-content {
+.products-content {
     padding: 20px;
     text-align: justify;
 }
