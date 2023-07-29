@@ -11,9 +11,10 @@
 require('connect.php');
 
 // SQL is written as a String.
-$query = "  SELECT * 
-            FROM packagingsupplies 
-            ORDER BY id DESC";
+$query = "SELECT packagingsupplies.*, images.filename AS image_filename 
+          FROM packagingsupplies 
+          LEFT JOIN images ON packagingsupplies.image_id = images.image_id
+          ORDER BY packagingsupplies.product_id DESC";
 
 // A PDO::Statement is prepared from the query.
 $statement = $db->prepare($query);
@@ -87,31 +88,39 @@ function shorten200($content, $maxLength = 200) {
     </nav>
 
     <section id="body">
-        <h1>Viewing all products</h1>
+    <h1>Viewing all products</h1>
 
-        <div id="products">
+    <div id="products">
         <ul>
-            <?php foreach ($statement as $product): ?>
+        <?php foreach ($statement as $product): ?>
             <li>
                 <div class="products-header">
-                    <h2><a href="post.php?id=<?= $product['id']; ?>"><?= $product['product_name']; ?></a></h2>
-                    <a href="edit.php?id=<?= $product['id']; ?>">edit</a>
+                    <h2><a href="post.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
+                    <a href="edit.php?id=<?= $product['product_id']; ?>">edit</a>
                 </div>
 
                 <div class="products-timestamp">
                     <?= date("F d, Y, g:i a", strtotime($product['timestamp'])); ?>
                 </div>
 
+                <!-- Display the image if available -->
+                <?php if ($product['image_id']): ?>
+                    <div class="products-image">
+                        <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>">
+                    </div>
+                <?php endif; ?>
+
                 <div class="products-content">
                     <?= shorten200($product['product_description']); ?>
                     <?php if (strlen($product['product_description']) > 200): ?>
-                            <a href="post.php?id=<?= $product['id']; ?>">Read Full Post</a>
+                        <a href="post.php?id=<?= $product['product_id']; ?>">Read Full Post</a>
                     <?php endif; ?>
                 </div>
             </li>
-            <?php endforeach; ?>
+        <?php endforeach; ?>
         </ul>
-    </section>
+    </div>
+</section>
 </div>
     
 </body>

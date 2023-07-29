@@ -11,16 +11,16 @@
 require('connect.php');
 require('authenticate.php');
 
-//Testing for image-ness
+// Function to check if the uploaded file is an image
 function file_is_an_image($temporary_path, $new_path) {
-    $allowed_mime_types      = ['image/gif', 'image/jpeg', 'image/png'];
+    $allowed_mime_types = ['image/gif', 'image/jpeg', 'image/png'];
     $allowed_file_extensions = ['gif', 'jpg', 'jpeg', 'png'];
 
-    $actual_file_extension   = pathinfo($new_path, PATHINFO_EXTENSION);
-    $actual_mime_type        = getimagesize($temporary_path)['mime'];
+    $actual_file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
+    $actual_mime_type = getimagesize($temporary_path)['mime'];
 
     $file_extension_is_valid = in_array($actual_file_extension, $allowed_file_extensions);
-    $mime_type_is_valid      = in_array($actual_mime_type, $allowed_mime_types);
+    $mime_type_is_valid = in_array($actual_mime_type, $allowed_mime_types);
 
     return $file_extension_is_valid && $mime_type_is_valid;
 }
@@ -30,9 +30,7 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     $product_name = filter_input(INPUT_POST, 'product_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $product_description = filter_input(INPUT_POST, 'product_description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-    $image = '';
-
-    // Handle image upload if an image is detected
+    // Handle image upload
     $image_upload_detected = isset($_FILES['image']) && ($_FILES['image']['error'] === 0);
 
     if ($image_upload_detected) {
@@ -43,54 +41,38 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
         if (file_is_an_image($temporary_image_path, $new_image_path)) {
             move_uploaded_file($temporary_image_path, $new_image_path);
 
-            // Insert image filename into the images table
+            // Insert image filename into the images table (assuming you have an "images" table)
             $insertImageQuery = "INSERT INTO images (filename) VALUES (:filename)";
             $insertImageStatement = $db->prepare($insertImageQuery);
             $insertImageStatement->bindValue(':filename', $image);
             $insertImageStatement->execute();
 
-            // Get the image ID from the last inserted row in the "images" table
-            $imageId = $db->lastInsertId();
-
-            // Associate the image ID with the new product entry
-            $query = "INSERT INTO packagingsupplies (product_name, product_description, image_id) 
-                      VALUES (:product_name, :product_description, :image_id)";
-            $statement = $db->prepare($query);
-
-            // Bind values to the parameters
-            $statement->bindValue(':product_name', $product_name);
-            $statement->bindValue(':product_description', $product_description);
-            $statement->bindValue(':image_id', $imageId);
-
-            // Execute the INSERT.
-            // execute() will check for possible SQL injection and remove if necessary
-            if ($statement->execute()) {
-                echo "Success";
-                header('Location: index.php');
-                exit;
-            }
+            // Get the image_id of the inserted image
+            $image_id = $db->lastInsertId();
         } else {
             // Invalid image type
             echo "Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.";
-            exit; // or handle the error appropriately
         }
-    } else {
-        // If no image is uploaded, proceed with inserting other product data without an image
-        $query = "INSERT INTO packagingsupplies (product_name, product_description) 
-                  VALUES (:product_name, :product_description)";
-        $statement = $db->prepare($query);
+    }
 
-        // Bind values to the parameters
-        $statement->bindValue(':product_name', $product_name);
-        $statement->bindValue(':product_description', $product_description);
+    // Build SQL query and bind to the above sanitized values.
+    $query = "INSERT INTO packagingsupplies (product_name, product_description, image_id) 
+              VALUES (:product_name, :product_description, :image_id)";
 
-        // Execute the INSERT.
-        // execute() will check for possible SQL injection and remove if necessary
-        if ($statement->execute()) {
-            echo "Success";
-            header('Location: index.php');
-            exit;
-        }
+    $statement = $db->prepare($query);
+
+    // Bind values to the parameters
+    $statement->bindValue(':product_name', $product_name);
+    $statement->bindValue(':product_description', $product_description);
+    // Bind the image_id to the parameter
+    $statement->bindValue(':image_id', $image_id);
+
+    // Execute the INSERT.
+    // execute() will check for possible SQL injection and remove if necessary
+    if ($statement->execute()) {
+        echo "Success";
+        header('Location: index.php');
+        exit;
     }
 }
 ?>
@@ -145,13 +127,13 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     </nav>
 
 
-    <h1>New Blog Post</h1>
+    <h1>Add new item</h1>
 
     <?php if (isset($error)): ?>
         <p><?php echo $error; ?></p>
     <?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <label for="product_name">Name of product:</label><br>
         <input type="text" id="product_name" name="product_name" required><br>
 
