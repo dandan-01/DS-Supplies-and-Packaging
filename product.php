@@ -4,42 +4,53 @@
     
     Name: Danilyn Sanchez
     Date: July 25, 2023
-    Description: Simple Content Management System for a DS Supplies and Packaging.
+    Description: Blogpost page.
 
 ****************/
 
 require('connect.php');
 
-// SQL is written as a String.
-$query = "SELECT packagingsupplies.*, images.filename AS image_filename 
+// Check if the 'id' parameter is present in the URL
+if (isset($_GET['id'])) {
+    // Sanitize and filter the 'id' parameter as an integer
+    $product_id = filter_input(INPUT_GET, 'id', FILTER_SANITIZE_NUMBER_INT);
+
+    // Build the SQL query to retrieve the blog post with the specified ID
+    $query = "SELECT packagingsupplies.*, images.filename AS filename 
           FROM packagingsupplies 
           LEFT JOIN images ON packagingsupplies.image_id = images.image_id
-          ORDER BY packagingsupplies.product_id DESC";
+          WHERE packagingsupplies.product_id = :product_id";
+    $statement = $db->prepare($query);
 
-// A PDO::Statement is prepared from the query.
-$statement = $db->prepare($query);
+    // Bind the sanitized ID value to the query parameter
+    $statement->bindValue(':product_id', $product_id);
 
-// Execution on the DB server is delayed until we execute().
-$statement->execute(); 
+    // Execute the query
+    $statement->execute();
 
-// Check if there are any rows returned
-if ($statement->rowCount() === 0) {
-    $error = "<p>No products were found.</p>";
-}
+    // Fetch the blog post as an associative array
+    $post = $statement->fetch(PDO::FETCH_ASSOC);
 
-function shorten200($content, $maxLength = 200) {
-    if (strlen($content) > $maxLength) {
-        $excerpt = substr($content, 0, $maxLength) . '...';
-        return $excerpt;
+    // Check if a post was found
+    if ($post) {
+        $image = $post['filename'];
+        $product_name = $post['product_name'];
+        $timestamp = date("F d, Y, g:i a", strtotime($post['timestamp'])); // Format the timestamp
+        $product_description = $post['product_description'];
     } else {
-        return $content;
-    } //
+        // If the post is not found, redirect to index.php
+        header('Location: index.php');
+        exit;
+    }
+} else {
+    // If 'id' parameter is missing, redirect to index.php
+    header('Location: index.php');
+    exit;
 }
-
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -87,34 +98,22 @@ function shorten200($content, $maxLength = 200) {
         <a href=""><h2>SUPPLIES</h2></a>
     </nav>
 
-    <section id="body">
-    <h1>Viewing all products</h1>
+    <div class="center margin">
+        <!-- Display the image if available -->
+        <?php if ($image): ?>
+            <img src="imgs/<?php echo $image; ?>" alt="<?= $product['product_name']; ?>" height='350' width='450'>
+        <?php endif; ?>
 
-    <div id="products">
         <ul>
-        <?php foreach ($statement as $product): ?>
             <li>
-                <div class="products-header">
-                    <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
-                </div>
-
-                <!-- Display the image if available -->
-                <?php if ($product['image_id']): ?>
-                    <div class="products-image">
-                        <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
-                    </div>
-                <?php endif; ?>
-
-                <div class="products-content">
-    <?= $product['product_description']; ?>
-    
-</div>
+                <h1><?= $product_name; ?></h1>
             </li>
-        <?php endforeach; ?>
+
+            <li>
+                <p class="blog-content"><?= $product_description; ?></p>
+                <a href="edit.php?id=<?= $product_id; ?>">Edit/Delete Post</a>
+            </li>
         </ul>
     </div>
-</section>
-</div>
-    
 </body>
 </html>

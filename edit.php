@@ -12,33 +12,77 @@ require('connect.php');
 require('authenticate.php');
 
 // Fetch the blog post details 
-$post_id = $_GET['id'];
+$product_id = $_GET['id'];
 
-$query = "SELECT * FROM blogpost WHERE id = :post_id";
+$query = "SELECT packagingsupplies.*, images.filename AS filename 
+          FROM packagingsupplies 
+          LEFT JOIN images ON packagingsupplies.image_id = images.image_id
+          WHERE packagingsupplies.product_id = :product_id";
 $statement = $db->prepare($query);
-$statement->bindValue(':post_id', $post_id);
+$statement->bindValue(':product_id', $product_id);
 $statement->execute();
 
 $post = $statement->fetch(PDO::FETCH_ASSOC);
+
+// Function to check if the uploaded file is an image
+function file_is_an_image($temporary_path, $new_path) {
+    $allowed_mime_types = ['image/gif', 'image/jpeg', 'image/png'];
+    $allowed_file_extensions = ['gif', 'jpg', 'jpeg', 'png'];
+
+    $actual_file_extension = pathinfo($new_path, PATHINFO_EXTENSION);
+    $actual_mime_type = getimagesize($temporary_path)['mime'];
+
+    $file_extension_is_valid = in_array($actual_file_extension, $allowed_file_extensions);
+    $mime_type_is_valid = in_array($actual_mime_type, $allowed_mime_types);
+
+    return $file_extension_is_valid && $mime_type_is_valid;
+}
 
 // Handle the form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update'])) {
         // Update button clicked
-        if (!empty($_POST['title']) && !empty($_POST['content'])) {
+        if (!empty($_POST['product_name']) && !empty($_POST['product_description'])) {
             // Sanitize and filter user input
-            $title = filter_input(INPUT_POST, 'title', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-            $content = filter_input(INPUT_POST, 'content', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $product_name = filter_input(INPUT_POST, 'product_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $product_description = filter_input(INPUT_POST, 'product_description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+
+            // Handle image upload
+            $image_upload_detected = isset($_FILES['image']) && ($_FILES['image']['error'] === 0);
+
+            if ($image_upload_detected) {
+                $image = $_FILES['image']['name'];
+                $temporary_image_path = $_FILES['image']['tmp_name'];
+                $new_image_path = 'uploads/' . $image;
+
+                if (file_is_an_image($temporary_image_path, $new_image_path)) {
+                    move_uploaded_file($temporary_image_path, $new_image_path);
+
+                    // Insert image filename into the images table (assuming you have an "images" table)
+                    $insertImageQuery = "UPDATE images (filename) VALUES (:filename)";
+                    $insertImageStatement = $db->prepare($insertImageQuery);
+                    $insertImageStatement->bindValue(':filename', $image);
+                    $insertImageStatement->execute();
+
+                    // Get the image_id of the inserted image
+                    $image_id = $db->lastInsertId();
+                } else {
+                    // Invalid image type
+                    echo "Invalid image format. Only JPG, JPEG, PNG, and GIF are allowed.";
+                }
+            }
 
             // Build SQL query and bind to the above sanitized values.
-            $query = "UPDATE blogpost SET title = :title, content = :content WHERE id = :post_id";
+            $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id WHERE product_id = :product_id";
 
             $statement = $db->prepare($query);
 
             // Bind values to the parameters
-            $statement->bindValue(':title', $title);
-            $statement->bindValue(':content', $content);
-            $statement->bindValue(':post_id', $post_id);
+            $statement->bindValue(':product_name', $product_name);
+            $statement->bindValue(':product_description', $product_description);
+            $statement->bindValue(':price', $price);
+            $statement->bindValue(':image_id', $image_id);
+            $statement->bindValue(':product_id', $product_id);
 
             // Execute the UPDATE.
             if ($statement->execute()) {
@@ -49,13 +93,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo "Failed to update the post.";
             }
         } else {
-            echo "Please provide a title and content for the post.";
+            echo "Please provide a name and description for the product.";
         }
+
+        // Handle image removal
+        if (isset($_POST['delete_image']) && $_POST['delete_image'] === 'on') {
+            // Delete the image from the database and file system
+            $image_id = $post['image_id'] ?? null;
+
+            if ($image_id) {
+                // Retrieve the image filename from the database
+                $getImageQuery = "SELECT filename FROM images WHERE image_id = :image_id";
+                $getImageStatement = $db->prepare($getImageQuery);
+                $getImageStatement->bindValue(':image_id', $image_id);
+                $getImageStatement->execute();
+                $image = $getImageStatement->fetchColumn();
+
+                // Delete the image from the file system
+                $image_path = 'uploads/' . $image;
+                if (file_exists($image_path)) {
+                    unlink($image_path);
+                }
+
+                // Delete the image record from the database
+                $deleteImageQuery = "DELETE FROM images WHERE image_id = :image_id";
+                $deleteImageStatement = $db->prepare($deleteImageQuery);
+                $deleteImageStatement->bindValue(':image_id', $image_id);
+                $deleteImageStatement->execute();
+
+                // Remove the image_id association from the product record
+                $updateProductQuery = "UPDATE packagingsupplies SET image_id = NULL WHERE product_id = :product_id";
+                $updateProductStatement = $db->prepare($updateProductQuery);
+                $updateProductStatement->bindValue(':product_id', $product_id);
+                $updateProductStatement->execute();
+            }
+        }
+
     } elseif (isset($_POST['delete'])) {
         // Delete button clicked
-        $query = "DELETE FROM blogpost WHERE id = :post_id";
+        $query = "DELETE FROM packagingsupplies WHERE product_id = :product_id";
         $statement = $db->prepare($query);
-        $statement->bindValue(':post_id', $post_id);
+        $statement->bindValue(':product_id', $product_id);
 
         if ($statement->execute()) {
             echo "Post deleted successfully.";
@@ -71,42 +149,94 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="main.css">
-    <title>DS Supplies and Packaging - Edit Blog Post</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="main.css" type="text/css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Boxed N Loaded</title>
 </head>
 <body>
-    <div id="header">
-    <div id="logotitle">
+    <!-- Remember that alternative syntax is good and html inside php is bad -->
+    <nav id="adminnav">
+        <h3>Welcome User!</h3>
+        <a href="add_new_item.php">Add new item</a>
+    </nav>
+
+    <header>
+        <div id="logotitle">
             <a href="index.php">
                 <img src="imgs/box.jpg" alt="Box logo">
             </a>
 
             <a href="index.php">
-                <h1>DS Supplies and Packaging</h1>
+                <h1>Boxed N' Loaded</h1>
+                <br>
+                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
             </a>
         </div>
 
-        <div id="nav">
-            <a href="index.php">Home</a>
-            <a href="new_post.php">New Post</a>
+        <div class="searchNav">
+            <input type="search" name="search" id="search" placeholder="Search...">
+            <button type="submit"><i class="fa fa-search"></i></button>
         </div>
-    </div>
 
-    <h1>Edit Blog Post</h1>
+        <nav id="topright">
+            <button>Register</button>
+            <a href="index.php">Log In</a>
+            <a href="new_post.php">Cart</a>
+        </nav>
+    </header>
+
+    <nav id="productnav">
+        <a href="index.php"><h2>HOME</h2></a>
+        <a href=""><h2>BOXES</h2></a>
+        <a href=""><h2>PAPERBAGS</h2></a>
+        <a href=""><h2>SUPPLIES</h2></a>
+    </nav>
+
+    <h1>Edit product</h1>
 
     <?php if (isset($error)): ?>
         <p><?php echo $error; ?></p>
     <?php endif; ?>
 
-    <form method="POST">
-        <label for="title">Title:</label><br>
-        <input type="text" id="title" name="title" value="<?= $post['title'] ?? ''; ?>" required><br>
+    <div class="center">
+        <form method="POST" >
+            <ul>
+                <li>
+                    <label for="product_name">Name of product:</label><br>
+                    <input type="text" id="product_name" name="product_name" value="<?= $post['product_name'] ?? ''; ?>" required size="50">
+                </li>
 
-        <label for="content">Content:</label><br>
-        <textarea id="content" name="content" rows="4" cols="50" required><?= $post['content'] ?? ''; ?></textarea><br>
+                <li>
+                    <label for="product_description">Description:</label><br>
+                    <textarea id="product_description" name="product_description" rows="4" cols="50" required><?= $post['product_description'] ?? ''; ?></textarea><br>
 
-        <input type="submit" name="update" value="Update Blog">
-        <input type="submit" name="delete" value="Delete Blog" onclick="return confirm('Are you sure you want to delete this post?')">
-    </form>
+                    <label for="price">Price:</label><br>
+                    <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" value="<?= $post['price'] ?? ''; ?>" required size="50" ><br>
+                </li>
+
+                <li>
+                    <label for="image">(optional) Upload Image:</label>
+                    <input type="file" id="image" name="image" >
+                </li>
+
+                <!-- Delete image IF there is one -->
+                <?php if (!empty($post['image_id'])): ?>
+                    <li>
+                        <input type="checkbox" id="delete_image" name="delete_image">
+                        <label for="delete_image">Remove Image:</label>
+                        <img src="imgs/<?= $post['filename']; ?>" alt="Cardboard boxes or supplies" height='200' width='250'><br>
+                    </li>
+                <?php endif; ?>
+
+                <li>
+                    <input type="submit" name="update" value="Update Product" onclick="return confirm('Are you sure you want to UPDATE this post?')">
+                    <input type="submit" name="delete" value="Delete Product" onclick="return confirm('Are you sure you want to DELETE this post?')">
+                </li>
+            </ul>
+        </form>
+    </div>
 </body>
 </html>

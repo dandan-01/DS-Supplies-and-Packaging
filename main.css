@@ -155,3 +155,36 @@ body {
     padding: 20px;
     text-align: justify;
 }
+
+#products ul {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-gap: 20px;
+  padding: 0;
+}
+
+#products li {
+  border: 1px solid #ccc;
+  padding: 20px;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+}
+
+.center li {
+  list-style: none;
+  padding: 10px;
+}
+
+#submitbtn {
+  background-color: rgb(17, 17, 190); 
+  color: white;
+  padding: 10px;
+}
+
+.margin {
+  margin-top: 50px;
+}

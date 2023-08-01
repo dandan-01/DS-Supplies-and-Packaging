@@ -25,18 +25,19 @@ function file_is_an_image($temporary_path, $new_path) {
     return $file_extension_is_valid && $mime_type_is_valid;
 }
 
-if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_description'])) {
+if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_description']) && !empty($_POST['price'])) {
     // Sanitize and filter user input
     $product_name = filter_input(INPUT_POST, 'product_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $product_description = filter_input(INPUT_POST, 'product_description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-
+    $price = filter_input(INPUT_POST, 'price', FILTER_SANITIZE_NUMBER_FLOAT);
+    
     // Handle image upload
     $image_upload_detected = isset($_FILES['image']) && ($_FILES['image']['error'] === 0);
 
     if ($image_upload_detected) {
         $image = $_FILES['image']['name'];
         $temporary_image_path = $_FILES['image']['tmp_name'];
-        $new_image_path = 'uploads/' . $image;
+        $new_image_path = 'imgs/' . $image;
 
         if (file_is_an_image($temporary_image_path, $new_image_path)) {
             move_uploaded_file($temporary_image_path, $new_image_path);
@@ -56,15 +57,15 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     }
 
     // Build SQL query and bind to the above sanitized values.
-    $query = "INSERT INTO packagingsupplies (product_name, product_description, image_id) 
-              VALUES (:product_name, :product_description, :image_id)";
+    $query = "INSERT INTO packagingsupplies (product_name, product_description, price, image_id) 
+              VALUES (:product_name, :product_description, :price, :image_id)";
 
     $statement = $db->prepare($query);
 
     // Bind values to the parameters
     $statement->bindValue(':product_name', $product_name);
     $statement->bindValue(':product_description', $product_description);
-    // Bind the image_id to the parameter
+    $statement->bindValue(':price', $price);
     $statement->bindValue(':image_id', $image_id);
 
     // Execute the INSERT.
@@ -133,17 +134,29 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
         <p><?php echo $error; ?></p>
     <?php endif; ?>
 
-    <form method="POST" enctype="multipart/form-data">
-        <label for="product_name">Name of product:</label><br>
-        <input type="text" id="product_name" name="product_name" required><br>
+    <form class="center" method="POST" enctype="multipart/form-data">
+        <ul>
+            <li>
+                <label for="product_name">Name of product:</label><br>
+                <input type="text" id="product_name" name="product_name" required size="50"><br>
+            </li>
+        
+            <li>
+                <label for="product_description">Description:</label><br>
+                <textarea id="product_description" name="product_description" rows="4" cols="50" required></textarea><br>
 
-        <label for="product_description">Description:</label><br>
-        <textarea id="product_description" name="product_description" rows="4" cols="50" required></textarea><br>
-
-        <label for="image">Upload Image:</label>
-        <input type="file" id="image" name="image">
-
-        <input type="submit" value="Submit">
+                <label for="price">Price:</label><br>
+                <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50" placeholder="eg. 29.99"><br>
+            </li>
+        
+            <li>
+                <label for="image">(optional) Upload Image:</label>
+                <input type="file" id="image" name="image">
+            </li>
+        
+            <li>
+                <input id="submitbtn" type="submit" value="Submit">
+            </li>
     </form>
 </body>
 </html>
