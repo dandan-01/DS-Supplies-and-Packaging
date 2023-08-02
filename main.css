@@ -130,30 +130,13 @@ body {
     list-style: none;
     padding: 0;
   }
-  
+
   #products li {
-    margin-bottom: 10px;
-    border-bottom: 3px solid #ccc;
-    padding-bottom: 10px;
-    
+    border: 1px solid #ccc;
   }
 
-  .products-header {
-    display: flex;
-    justify-content: center;
-    gap: 30px;
-    align-items: center;
-    height: 40px;
-}
-
-.products-header h2 {
-    font-weight: bold;
-    color: brown;
-}
-
 .products-content {
-    padding: 20px;
-    text-align: justify;
+  padding: 0 15px 0 15px;
 }
 
 #products ul {
@@ -162,11 +145,6 @@ body {
   grid-template-columns: repeat(4, 1fr);
   grid-gap: 20px;
   padding: 0;
-}
-
-#products li {
-  border: 1px solid #ccc;
-  padding: 20px;
 }
 
 .center {
@@ -187,4 +165,10 @@ body {
 
 .margin {
   margin-top: 50px;
+}
+
+.pricemsg {
+  font-style: italic;
+  color: grey;
+  margin: 0;
 }

@@ -88,32 +88,32 @@ function shorten200($content, $maxLength = 200) {
     </nav>
 
     <section id="body">
-    <h1>Viewing all products</h1>
+        <h1>Viewing all products</h1>
 
-    <div id="products">
-        <ul>
-        <?php foreach ($statement as $product): ?>
-            <li>
-                <div class="products-header">
-                    <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
-                </div>
-
-                <!-- Display the image if available -->
-                <?php if ($product['image_id']): ?>
-                    <div class="products-image">
-                        <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
+        <div id="products">
+            <ul>
+            <?php foreach ($statement as $product): ?>
+                <li>
+                    <div class="center">
+                        <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
                     </div>
-                <?php endif; ?>
 
-                <div class="products-content">
-    <?= $product['product_description']; ?>
-    
-</div>
-            </li>
-        <?php endforeach; ?>
-        </ul>
-    </div>
-</section>
+                    <!-- Display the image if available -->
+                    <?php if ($product['image_id']): ?>
+                        <div class="center">
+                            <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="products-content">
+                        <p>Price: $<?= number_format($product['price'], 2); ?></p>
+                        <p>Description: <?= $product['product_description']; ?><p>
+                    </div>
+                </li>
+            <?php endforeach; ?>
+            </ul>
+        </div>
+    </section>
 </div>
     
 </body>

@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Sanitize and filter user input
             $product_name = filter_input(INPUT_POST, 'product_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
             $product_description = filter_input(INPUT_POST, 'product_description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+            $price = filter_input(INPUT_POST, 'price', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
 
             // Handle image upload
             $image_upload_detected = isset($_FILES['image']) && ($_FILES['image']['error'] === 0);
@@ -53,13 +54,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($image_upload_detected) {
                 $image = $_FILES['image']['name'];
                 $temporary_image_path = $_FILES['image']['tmp_name'];
-                $new_image_path = 'uploads/' . $image;
+                $new_image_path = 'imgs/' . $image;
 
                 if (file_is_an_image($temporary_image_path, $new_image_path)) {
                     move_uploaded_file($temporary_image_path, $new_image_path);
 
                     // Insert image filename into the images table (assuming you have an "images" table)
-                    $insertImageQuery = "UPDATE images (filename) VALUES (:filename)";
+                    $insertImageQuery = "INSERT INTO images (filename) VALUES (:filename)";
                     $insertImageStatement = $db->prepare($insertImageQuery);
                     $insertImageStatement->bindValue(':filename', $image);
                     $insertImageStatement->execute();
@@ -86,6 +87,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // Execute the UPDATE.
             if ($statement->execute()) {
+                // Update the filename in the images table if a new image is uploaded
+                if ($image_id) {
+                    $updateFilenameQuery = "UPDATE images SET filename = :filename WHERE image_id = :image_id";
+                    $updateFilenameStatement = $db->prepare($updateFilenameQuery);
+                    $updateFilenameStatement->bindValue(':filename', $image);
+                    $updateFilenameStatement->bindValue(':image_id', $image_id);
+                    $updateFilenameStatement->execute();
+                }
+
                 echo "Post updated successfully.";
                 header('Location: index.php');
                 exit;
@@ -98,7 +108,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Handle image removal
         if (isset($_POST['delete_image']) && $_POST['delete_image'] === 'on') {
-            // Delete the image from the database and file system
+            // Delete the image from the database 
             $image_id = $post['image_id'] ?? null;
 
             if ($image_id) {
@@ -108,12 +118,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $getImageStatement->bindValue(':image_id', $image_id);
                 $getImageStatement->execute();
                 $image = $getImageStatement->fetchColumn();
-
-                // Delete the image from the file system
-                $image_path = 'uploads/' . $image;
-                if (file_exists($image_path)) {
-                    unlink($image_path);
-                }
 
                 // Delete the image record from the database
                 $deleteImageQuery = "DELETE FROM images WHERE image_id = :image_id";
@@ -202,7 +206,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <div class="center">
-        <form method="POST" >
+        <form method="POST" enctype="multipart/form-data" >
             <ul>
                 <li>
                     <label for="product_name">Name of product:</label><br>
@@ -214,7 +218,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <textarea id="product_description" name="product_description" rows="4" cols="50" required><?= $post['product_description'] ?? ''; ?></textarea><br>
 
                     <label for="price">Price:</label><br>
-                    <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" value="<?= $post['price'] ?? ''; ?>" required size="50" ><br>
+                    <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50"  value="<?= $post['price'] ? number_format($post['price'], 2, '.', ',') : ''; ?>" >
+                    <p class="pricemsg">Round the price to 2 decimals max</p>
                 </li>
 
                 <li>

@@ -29,7 +29,7 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     // Sanitize and filter user input
     $product_name = filter_input(INPUT_POST, 'product_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
     $product_description = filter_input(INPUT_POST, 'product_description', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
-    $price = filter_input(INPUT_POST, 'price', FILTER_SANITIZE_NUMBER_FLOAT);
+    $price = filter_input(INPUT_POST, 'price', FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION);
     
     // Handle image upload
     $image_upload_detected = isset($_FILES['image']) && ($_FILES['image']['error'] === 0);
@@ -57,8 +57,12 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     }
 
     // Build SQL query and bind to the above sanitized values.
-    $query = "INSERT INTO packagingsupplies (product_name, product_description, price, image_id) 
-              VALUES (:product_name, :product_description, :price, :image_id)";
+    $query = "INSERT INTO packagingsupplies (product_name, product_description, price) 
+          VALUES (:product_name, :product_description, :price)";
+
+    if (isset($image_id)) {
+        $query .= "; UPDATE packagingsupplies SET image_id = :image_id WHERE product_id = LAST_INSERT_ID()";
+    }
 
     $statement = $db->prepare($query);
 
@@ -66,7 +70,10 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     $statement->bindValue(':product_name', $product_name);
     $statement->bindValue(':product_description', $product_description);
     $statement->bindValue(':price', $price);
-    $statement->bindValue(':image_id', $image_id);
+
+    if (isset($image_id)) {
+        $statement->bindValue(':image_id', $image_id);
+    }
 
     // Execute the INSERT.
     // execute() will check for possible SQL injection and remove if necessary
@@ -146,7 +153,8 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
                 <textarea id="product_description" name="product_description" rows="4" cols="50" required></textarea><br>
 
                 <label for="price">Price:</label><br>
-                <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50" placeholder="eg. 29.99"><br>
+                <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50" placeholder="eg. 29.99">
+                <p class="pricemsg">Round the price to 2 decimals</p>
             </li>
         
             <li>

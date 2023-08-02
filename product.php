@@ -37,6 +37,7 @@ if (isset($_GET['id'])) {
         $product_name = $post['product_name'];
         $timestamp = date("F d, Y, g:i a", strtotime($post['timestamp'])); // Format the timestamp
         $product_description = $post['product_description'];
+        $price = $post['price'];
     } else {
         // If the post is not found, redirect to index.php
         header('Location: index.php');
@@ -110,7 +111,8 @@ if (isset($_GET['id'])) {
             </li>
 
             <li>
-                <p class="blog-content"><?= $product_description; ?></p>
+                <h3>Price: $<?= number_format($price, 2); ?></h3>
+                <p>Description: <?= $product_description; ?></p>
                 <a href="edit.php?id=<?= $product_id; ?>">Edit/Delete Post</a>
             </li>
         </ul>
