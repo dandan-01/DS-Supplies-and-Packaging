@@ -73,8 +73,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            // Build SQL query and bind to the above sanitized values.
-            $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id WHERE product_id = :product_id";
+            if (!empty($_FILES['image']['name'])) {
+                // // Build SQL query with new image, updating image_id
+                $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id WHERE product_id = :product_id";
+            } else {
+                // Build SQL query with no image update
+                $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price WHERE product_id = :product_id";
+            }
 
             $statement = $db->prepare($query);
 
@@ -82,8 +87,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statement->bindValue(':product_name', $product_name);
             $statement->bindValue(':product_description', $product_description);
             $statement->bindValue(':price', $price);
-            $statement->bindValue(':image_id', $image_id);
             $statement->bindValue(':product_id', $product_id);
+
+            if (!empty($_FILES['image']['name'])) {
+                // New image uploaded, bind image_id
+                $statement->bindValue(':image_id', $image_id);
+            }
 
             // Execute the UPDATE.
             if ($statement->execute()) {
@@ -224,7 +233,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <li>
                     <label for="image">(optional) Upload Image:</label>
-                    <input type="file" id="image" name="image" >
+                    <input type="file" id="image" name="image">
                 </li>
 
                 <!-- Delete image IF there is one -->
