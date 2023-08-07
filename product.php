@@ -76,7 +76,7 @@ if (isset($_GET['id'])) {
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
                 <br>
-                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
+                <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
 
@@ -99,7 +99,7 @@ if (isset($_GET['id'])) {
         <a href=""><h2>SUPPLIES</h2></a>
     </nav>
 
-    <div class="center margin">
+    <div id="productdiv" class="center">
         <!-- Display the image if available -->
         <?php if ($image): ?>
             <img src="imgs/<?php echo $image; ?>" alt="<?= $product['product_name']; ?>" height='350' width='450'>

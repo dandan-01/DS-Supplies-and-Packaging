@@ -111,7 +111,7 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
                 <br>
-                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
+                <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
 

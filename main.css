@@ -163,8 +163,9 @@ body {
   padding: 10px;
 }
 
-.margin {
+#productdiv {
   margin-top: 50px;
+  padding: 0 200px 0 200px;
 }
 
 .pricemsg {

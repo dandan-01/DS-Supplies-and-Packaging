@@ -64,7 +64,7 @@ function shorten200($content, $maxLength = 200) {
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
                 <br>
-                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
+                <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
 
@@ -90,6 +90,18 @@ function shorten200($content, $maxLength = 200) {
     <section id="body">
         <h1>Viewing all products</h1>
 
+        <div id="sort" class="center">
+            <form action="index.php" method="get">
+                <label for="sort-select">Sort:</label>
+                <select id="sort-select" name="sort" onchange="this.form.submit()">
+                    <option value="alphabetical">Alphabetically</option>
+                    <option value="newly_added">Newly Added</option>
+                    <option value="price_low_high">Price: Low to High</option>
+                    <option value="price_high_low">Price: High to Low</option>
+                </select>
+            </form>
+        </div>
+
         <div id="products">
             <ul>
             <?php foreach ($statement as $product): ?>
@@ -105,9 +117,8 @@ function shorten200($content, $maxLength = 200) {
                         </div>
                     <?php endif; ?>
 
-                    <div class="products-content">
+                    <div class="products-content center">
                         <p>Price: $<?= number_format($product['price'], 2); ?></p>
-                        <p>Description: <?= $product['product_description']; ?><p>
                     </div>
                 </li>
             <?php endforeach; ?>

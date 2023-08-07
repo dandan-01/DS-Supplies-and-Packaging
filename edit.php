@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
                 <br>
-                <h4><i>"Expertly Packed N' Safely Delivered to You!"</i></h4>
+                <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
 
@@ -224,7 +224,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <li>
                     <label for="product_description">Description:</label><br>
-                    <textarea id="product_description" name="product_description" rows="4" cols="50" required><?= $post['product_description'] ?? ''; ?></textarea><br>
+                    <textarea id="product_description" name="product_description" rows="4" cols="50" required><?= $post['product_description'] ?? ''; ?></textarea><br><br>
 
                     <label for="price">Price:</label><br>
                     <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50"  value="<?= $post['price'] ? number_format($post['price'], 2, '.', ',') : ''; ?>" >
