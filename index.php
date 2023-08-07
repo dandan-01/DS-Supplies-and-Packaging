@@ -10,11 +10,33 @@
 
 require('connect.php');
 
-// SQL is written as a String.
+$sortingOption = isset($_GET['sort']) ? $_GET['sort'] : '';
+
+// Define the default sorting if no option is selected
+$orderBy = '';
+
+// Determine the sorting based on the selected option
+switch ($sortingOption) {
+    case 'newly_added':
+        $orderBy = 'ORDER BY packagingsupplies.product_id DESC';
+        break;
+    case 'price_low_high':
+        $orderBy = 'ORDER BY packagingsupplies.price ASC';
+        break;
+    case 'price_high_low':
+        $orderBy = 'ORDER BY packagingsupplies.price DESC';
+        break;
+    // Default case: Sort Alphabetically
+    case 'alphabetical':
+    default:
+        $orderBy = 'ORDER BY packagingsupplies.product_name ASC';
+}
+
+// Update SQL query to use $orderBy switchcase
 $query = "SELECT packagingsupplies.*, images.filename AS image_filename 
           FROM packagingsupplies 
           LEFT JOIN images ON packagingsupplies.image_id = images.image_id
-          ORDER BY packagingsupplies.product_id DESC";
+          $orderBy";
 
 // A PDO::Statement is prepared from the query.
 $statement = $db->prepare($query);
