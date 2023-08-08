@@ -116,10 +116,10 @@ function shorten200($content, $maxLength = 200) {
             <form action="index.php" method="get">
                 <label for="sort-select">Sort:</label>
                 <select id="sort-select" name="sort" onchange="this.form.submit()">
-                    <option value="alphabetical">Alphabetically</option>
-                    <option value="newly_added">Newly Added</option>
-                    <option value="price_low_high">Price: Low to High</option>
-                    <option value="price_high_low">Price: High to Low</option>
+                    <option value="alphabetical" <?php if ($sortingOption === 'alphabetical') echo 'selected'; ?>>Alphabetically</option>
+                    <option value="newly_added" <?php if ($sortingOption === 'newly_added') echo 'selected'; ?>>Newly Added</option>
+                    <option value="price_low_high" <?php if ($sortingOption === 'price_low_high') echo 'selected'; ?>>Price: Low to High</option>
+                    <option value="price_high_low" <?php if ($sortingOption === 'price_high_low') echo 'selected'; ?>>Price: High to Low</option>
                 </select>
             </form>
         </div>
