@@ -75,6 +75,7 @@ function shorten200($content, $maxLength = 200) {
     <nav id="adminnav">
         <h3>Welcome User!</h3>
         <a href="add_new_item.php">Add new item</a>
+        <a href="categories.php">Create/Update Category</a>
     </nav>
 
     <header>
