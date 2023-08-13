@@ -109,6 +109,7 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     <nav id="adminnav">
         <h3>Welcome User!</h3>
         <a href="add_new_item.php">Add new item</a>
+        <a href="categories.php">Create/Update Category</a>
     </nav>
 
     <header>
@@ -138,9 +139,9 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
 
     <nav id="productnav">
         <a href="index.php"><h2>HOME</h2></a>
-        <a href=""><h2>BOXES</h2></a>
-        <a href=""><h2>PAPERBAGS</h2></a>
-        <a href=""><h2>SUPPLIES</h2></a>
+        <a href="category_header_page.php?category_name=Boxes"><h2>BOXES</h2></a>
+        <a href="category_header_page.php?category_name=Paperbags"><h2>PAPERBAGS</h2></a>
+        <a href="category_header_page.php?category_name=Supplies"><h2>SUPPLIES</h2></a>
     </nav>
 
 
