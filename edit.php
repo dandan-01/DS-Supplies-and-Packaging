@@ -11,18 +11,29 @@
 require('connect.php');
 require('authenticate.php');
 
-// Fetch the blog post details 
+// Fetch the product details 
 $product_id = $_GET['id'];
 
-$query = "SELECT packagingsupplies.*, images.filename AS filename 
+$query = "SELECT 
+              packagingsupplies.*, 
+              images.filename AS filename,
+              categories.category_id AS category_id,
+              categories.category_name AS category_name
           FROM packagingsupplies 
           LEFT JOIN images ON packagingsupplies.image_id = images.image_id
+          LEFT JOIN categories ON packagingsupplies.category_id = categories.category_id
           WHERE packagingsupplies.product_id = :product_id";
+
 $statement = $db->prepare($query);
 $statement->bindValue(':product_id', $product_id);
 $statement->execute();
 
 $post = $statement->fetch(PDO::FETCH_ASSOC);
+
+// Fetch categories for the drop-down list
+$categoriesQuery = "SELECT * FROM categories";
+$categoriesStatement = $db->query($categoriesQuery);
+$categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
 
 // Function to check if the uploaded file is an image
 function file_is_an_image($temporary_path, $new_path) {
@@ -74,11 +85,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             if (!empty($_FILES['image']['name'])) {
-                // // Build SQL query with new image, updating image_id
-                $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id WHERE product_id = :product_id";
+                // Build SQL query with new image and potentially category_id update
+                if (!empty($_POST['category_id'])) {
+                    $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id, category_id = :category_id WHERE product_id = :product_id";
+                } else {
+                    $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, image_id = :image_id WHERE product_id = :product_id";
+                }
             } else {
-                // Build SQL query with no image update
-                $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price WHERE product_id = :product_id";
+                // Build SQL query with no image update and potentially category_id update
+                if (!empty($_POST['category_id'])) {
+                    $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price, category_id = :category_id WHERE product_id = :product_id";
+                } else {
+                    $query = "UPDATE packagingsupplies SET product_name = :product_name, product_description = :product_description, price = :price WHERE product_id = :product_id";
+                }
             }
 
             $statement = $db->prepare($query);
@@ -89,9 +108,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $statement->bindValue(':price', $price);
             $statement->bindValue(':product_id', $product_id);
 
+            // New image uploaded, bind image_id
             if (!empty($_FILES['image']['name'])) {
-                // New image uploaded, bind image_id
                 $statement->bindValue(':image_id', $image_id);
+            }
+
+            // Category chosen, bind category_id
+            if (!empty($_POST['category_id'])) {
+                $category_id = $_POST['category_id'];
+                $statement->bindValue(':category_id', $category_id);
             }
 
             // Execute the UPDATE.
@@ -229,6 +254,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="price">Price:</label><br>
                     <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50"  value="<?= $post['price'] ? number_format($post['price'], 2, '.', ',') : ''; ?>" >
                     <p class="pricemsg">Round the price to 2 decimals max</p>
+                </li>
+
+                <!-- Add drop-down category list -->
+                <li>
+                    <label for="category_id">Select Category:</label><br>
+                    <select id="category_id" name="category_id">
+                        <option value="">-- Select Category --</option>
+                        <?php foreach ($categories as $category): ?>
+                            <option value="<?= $category['category_id']; ?>" <?= ($post['category_id'] ?? '') == $category['category_id'] ? 'selected' : '' ?>>
+                                <?= $category['category_name']; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
                 </li>
 
                 <li>

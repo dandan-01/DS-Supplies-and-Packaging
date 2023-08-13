@@ -11,6 +11,11 @@
 require('connect.php');
 require('authenticate.php');
 
+// Fetch categories to populate drop-down list
+$categoriesQuery = "SELECT * FROM categories";
+$categoriesStatement = $db->query($categoriesQuery);
+$categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
+
 // Function to check if the uploaded file is an image
 function file_is_an_image($temporary_path, $new_path) {
     $allowed_mime_types = ['image/gif', 'image/jpeg', 'image/png'];
@@ -56,9 +61,12 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
         }
     }
 
+    // Retrieve selected category ID
+    $category_id = $_POST['category_id'];
+
     // Build SQL query and bind to the above sanitized values.
-    $query = "INSERT INTO packagingsupplies (product_name, product_description, price) 
-          VALUES (:product_name, :product_description, :price)";
+    $query = "INSERT INTO packagingsupplies (product_name, product_description, price, category_id) 
+              VALUES (:product_name, :product_description, :price, :category_id)";
 
     if (isset($image_id)) {
         $query .= "; UPDATE packagingsupplies SET image_id = :image_id WHERE product_id = LAST_INSERT_ID()";
@@ -70,6 +78,7 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
     $statement->bindValue(':product_name', $product_name);
     $statement->bindValue(':product_description', $product_description);
     $statement->bindValue(':price', $price);
+    $statement->bindValue(':category_id', $category_id);
 
     if (isset($image_id)) {
         $statement->bindValue(':image_id', $image_id);
@@ -155,6 +164,16 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
                 <label for="price">Price:</label><br>
                 <input type="text" id="price" name="price" pattern="^\d+(\.\d{1,2})?$" required size="50" placeholder="eg. 29.99">
                 <p class="pricemsg">Round the price to 2 decimals</p>
+            </li>
+
+            <li>
+                <label for="category_id">Select Category:</label><br>
+                <select id="category_id" name="category_id">
+                    <option value="">-- Select Category --</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= $category['category_id']; ?>"><?= $category['category_name']; ?></option>
+                    <?php endforeach; ?>
+                </select>
             </li>
         
             <li>
