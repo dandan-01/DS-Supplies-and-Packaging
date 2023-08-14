@@ -216,8 +216,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div class="searchNav">
-            <input type="search" name="search" id="search" placeholder="Search...">
-            <button type="submit"><i class="fa fa-search"></i></button>
+            <form action="search_results.php" method="GET">
+                <ul>
+                    <li>
+                        <input type="search" name="search_query" id="search" placeholder="Search...">
+
+                        <!-- Search using specific categories -->
+                        <select name="category">
+                            <option value="">All</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= $category['category_id']; ?>"><?= $category['category_name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </li>
+
+                    <li>
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </li>
+                </ul>
+            </form>
         </div>
 
         <nav id="topright">

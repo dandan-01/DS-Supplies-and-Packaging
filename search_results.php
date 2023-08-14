@@ -10,15 +10,34 @@
 
 require('connect.php');
 
+// Fetch categories to populate AJAX search form drop-down list
+$categoriesQuery = "SELECT * FROM categories";
+$categoriesStatement = $db->query($categoriesQuery);
+$categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
+
 $searchQuery = $_GET['search_query'];
+$categoryFilter = $_GET['category'];
+
 //Use LEFT JOIN to include products with NO images included (ie. box test)
 $query = "SELECT packagingsupplies.*, images.filename AS image_filename 
             FROM packagingsupplies 
             LEFT JOIN images ON packagingsupplies.image_id = images.image_id 
             WHERE product_name LIKE :keyword";
+
+// Add category filter IF selected
+if (!empty($categoryFilter)) {
+    $query .= " AND category_id = :category_id";
+}
+
 $statement = $db->prepare($query);
 $keyword = '%' . $searchQuery . '%';
 $statement->bindValue(':keyword', $keyword);
+
+// Bind category IF selected
+if (!empty($categoryFilter)) {
+    $statement->bindValue(':category_id', $categoryFilter);
+}
+
 $statement->execute();
 $searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
 
@@ -56,8 +75,25 @@ $searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <div class="searchNav">
-            <input type="search" name="search" id="search" placeholder="Search...">
-            <button type="submit"><i class="fa fa-search"></i></button>
+            <form action="search_results.php" method="GET">
+                <ul>
+                    <li>
+                        <input type="search" name="search_query" id="search" placeholder="Search...">
+
+                        <!-- Search using specific categories -->
+                        <select name="category">
+                            <option value="">All</option>
+                            <?php foreach ($categories as $category): ?>
+                                <option value="<?= $category['category_id']; ?>"><?= $category['category_name']; ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </li>
+
+                    <li>
+                        <button type="submit"><i class="fa fa-search"></i></button>
+                    </li>
+                </ul>
+            </form>
         </div>
 
         <nav id="topright">
@@ -76,24 +112,30 @@ $searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
 
     <div id="products">
         <ul>
-            <?php foreach ($searchResults as $product): ?>
-                <li>
-                    <div class="center">
-                        <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
-                    </div>
-
-                    <!-- Display the image if available -->
-                    <?php if ($product['image_id']): ?>
+            <!-- If empty print no results found -->
+            <?php if (empty($searchResults)): ?>
+                <p>No results found.</p>
+            <?php else: ?>
+                <!-- Print out products to page -->
+                <?php foreach ($searchResults as $product): ?>
+                    <li>
                         <div class="center">
-                            <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
+                            <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
                         </div>
-                    <?php endif; ?>
 
-                    <div class="products-content center">
-                        <p>Price: $<?= number_format($product['price'], 2); ?></p>
-                    </div>
-                </li>
-            <?php endforeach; ?>
+                        <!-- Display the image if available -->
+                        <?php if ($product['image_id']): ?>
+                            <div class="center">
+                                <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="products-content center">
+                            <p>Price: $<?= number_format($product['price'], 2); ?></p>
+                        </div>
+                    </li>
+                <?php endforeach; ?>
+            <?php endif; ?>
         </ul>
     </div>
     

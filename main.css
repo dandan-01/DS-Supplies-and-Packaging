@@ -57,20 +57,36 @@ body {
 
   .searchNav {
     display: flex;
-    align-items: center;
+    align-items: center; 
   }
-
-  .searchNav input, button{
-    display: inline;
+  
+  .searchNav ul {
+    list-style-type: none; 
+    display: flex; 
+  }
+  
+  .searchNav li {
+    margin-right: 5px; /* Add spacing between button */
+  }
+  
+  .searchNav input, .searchNav select, .searchNav button {
     padding: 10px;
   }
-
+  
   .searchNav input {
     width: 20em;
   }
-
+  
+  .searchNav select {
+    width: 8em;
+  }
+  
   .searchNav button {
-    width: 5em;
+    padding: 10px 20px 10px 20px;
+  }
+
+  button {
+    padding: 10px;
   }
   
   #topright {
