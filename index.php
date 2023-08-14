@@ -92,8 +92,10 @@ function shorten200($content, $maxLength = 200) {
         </div>
 
         <div class="searchNav">
-            <input type="search" name="search" id="search" placeholder="Search...">
-            <button type="submit"><i class="fa fa-search"></i></button>
+            <form action="search_results.php" method="GET" >
+                <input type="search" name="search_query" id="search" placeholder="Search...">
+                <button type="submit"><i class="fa fa-search"></i></button>
+            </form>
         </div>
 
         <nav id="topright">

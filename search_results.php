@@ -4,26 +4,24 @@
     
     Name: Danilyn Sanchez
     Date: Aug 13, 2023
-    Description: View items according to the selected category.
+    Description: Show search results.
 
 ****************/
 
-require('connect.php'); // Include your database connection file
+require('connect.php');
 
-if (isset($_GET['category_name'])) {
-    $category_name = $_GET['category_name'];
-    
-    // Fetch products for the specific category 
-    $query = "SELECT packagingsupplies.*, images.filename AS image_filename
-            FROM packagingsupplies
-            JOIN categories ON packagingsupplies.category_id = categories.category_id
-            LEFT JOIN images ON packagingsupplies.image_id = images.image_id
-            WHERE categories.category_name = :category_name";
-    $statement = $db->prepare($query);
-    $statement->bindValue(':category_name', $category_name);
-    $statement->execute();
-    $products = $statement->fetchAll(PDO::FETCH_ASSOC);
-}
+$searchQuery = $_GET['search_query'];
+//Use LEFT JOIN to include products with NO images included (ie. box test)
+$query = "SELECT packagingsupplies.*, images.filename AS image_filename 
+            FROM packagingsupplies 
+            LEFT JOIN images ON packagingsupplies.image_id = images.image_id 
+            WHERE product_name LIKE :keyword";
+$statement = $db->prepare($query);
+$keyword = '%' . $searchQuery . '%';
+$statement->bindValue(':keyword', $keyword);
+$statement->execute();
+$searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -77,8 +75,8 @@ if (isset($_GET['category_name'])) {
     </nav>
 
     <div id="products">
-            <ul>
-            <?php foreach ($products as $product): ?>
+        <ul>
+            <?php foreach ($searchResults as $product): ?>
                 <li>
                     <div class="center">
                         <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
@@ -96,7 +94,8 @@ if (isset($_GET['category_name'])) {
                     </div>
                 </li>
             <?php endforeach; ?>
-            </ul>
-        </div>
+        </ul>
+    </div>
+    
 </body>
 </html>
