@@ -15,8 +15,18 @@ $categoriesQuery = "SELECT * FROM categories";
 $categoriesStatement = $db->query($categoriesQuery);
 $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
 
+// Get search query and category filter
 $searchQuery = $_GET['search_query'];
 $categoryFilter = $_GET['category'];
+
+// Set N number of results per page
+$resultsPerPage = 8;
+
+// Calculate current page
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+
+// Calculate OFFSET for pagination
+$offset = ($page - 1) * $resultsPerPage;
 
 //Use LEFT JOIN to include products with NO images included (ie. box test)
 $query = "SELECT packagingsupplies.*, images.filename AS image_filename 
@@ -29,9 +39,15 @@ if (!empty($categoryFilter)) {
     $query .= " AND category_id = :category_id";
 }
 
+// Modify the query to include LIMIT and OFFSET
+$query .= " LIMIT :limit OFFSET :offset";
+
+// Prep and bind keyword, limit, offset
 $statement = $db->prepare($query);
 $keyword = '%' . $searchQuery . '%';
 $statement->bindValue(':keyword', $keyword);
+$statement->bindValue(':limit', $resultsPerPage, PDO::PARAM_INT);
+$statement->bindValue(':offset', $offset, PDO::PARAM_INT);
 
 // Bind category IF selected
 if (!empty($categoryFilter)) {
@@ -40,6 +56,10 @@ if (!empty($categoryFilter)) {
 
 $statement->execute();
 $searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculate total number of pages
+$totalResults = count($searchResults);
+$totalPages = ceil($totalResults / $resultsPerPage);
 
 ?>
 
@@ -112,32 +132,44 @@ $searchResults = $statement->fetchAll(PDO::FETCH_ASSOC);
 
     <div id="products">
         <ul>
-            <!-- If empty print no results found -->
-            <?php if (empty($searchResults)): ?>
-                <p>No results found.</p>
-            <?php else: ?>
-                <!-- Print out products to page -->
-                <?php foreach ($searchResults as $product): ?>
-                    <li>
+            <!-- Loop through the page results and display products -->
+            <?php 
+            $startIndex = ($page - 1) * $resultsPerPage;
+            $endIndex = $startIndex + $resultsPerPage;
+            
+            foreach (array_slice($searchResults, $startIndex, $resultsPerPage) as $product): ?>
+                <li>
+                    <div class="center">
+                        <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
+                    </div>
+
+                    <!-- Display the image if available -->
+                    <?php if ($product['image_id']): ?>
                         <div class="center">
-                            <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
+                            <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
                         </div>
+                    <?php endif; ?>
 
-                        <!-- Display the image if available -->
-                        <?php if ($product['image_id']): ?>
-                            <div class="center">
-                                <img src="imgs/<?= $product['image_filename']; ?>" alt="<?= $product['product_name']; ?>" height='200' width='250'>
-                            </div>
-                        <?php endif; ?>
-
-                        <div class="products-content center">
-                            <p>Price: $<?= number_format($product['price'], 2); ?></p>
-                        </div>
-                    </li>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    <div class="products-content center">
+                        <p>Price: $<?= number_format($product['price'], 2); ?></p>
+                    </div>
+                </li>
+            <?php endforeach; ?>
         </ul>
     </div>
+
+    <!-- Display pagination links -->
+    <?php if ($pageCount > 1): ?>
+        <div class="pagination">
+            <?php for ($i = 1; $i <= $pageCount; $i++): ?>
+                <?php if ($i === $page): ?>
+                    <span class="current-page">Page <?= $i ?></span>
+                <?php else: ?>
+                    <a href="?search_query=<?= urlencode($searchQuery) ?>&category=<?= $categoryFilter ?>&page=<?= $i ?>">Page <?= $i ?></a>
+                <?php endif; ?>
+            <?php endfor; ?>
+        </div>
+    <?php endif; ?>
     
 </body>
 </html>
