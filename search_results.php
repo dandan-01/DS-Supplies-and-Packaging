@@ -132,12 +132,7 @@ $totalPages = ceil($totalResults / $resultsPerPage);
 
     <div id="products">
         <ul>
-            <!-- Loop through the page results and display products -->
-            <?php 
-            $startIndex = ($page - 1) * $resultsPerPage;
-            $endIndex = $startIndex + $resultsPerPage;
-            
-            foreach (array_slice($searchResults, $startIndex, $resultsPerPage) as $product): ?>
+            <?php foreach ($searchResults as $product): ?>
                 <li>
                     <div class="center">
                         <h2><a href="product.php?id=<?= $product['product_id']; ?>"><?= $product['product_name']; ?></a></h2>
@@ -159,9 +154,11 @@ $totalPages = ceil($totalResults / $resultsPerPage);
     </div>
 
     <!-- Display pagination links -->
-    <?php if ($pageCount > 1): ?>
+    <?php if ($totalPages > 1): ?>
+        <p>test</p>
+
         <div class="pagination">
-            <?php for ($i = 1; $i <= $pageCount; $i++): ?>
+            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
                 <?php if ($i === $page): ?>
                     <span class="current-page">Page <?= $i ?></span>
                 <?php else: ?>
