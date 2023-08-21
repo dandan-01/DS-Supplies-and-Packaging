@@ -8,21 +8,40 @@
 
 ****************/
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Get user inputs
-    $email = $_POST["email"];
+require('connect.php');
+
+// Fetch categories to populate AJAX search form drop-down list
+$categoriesQuery = "SELECT * FROM categories";
+$categoriesStatement = $db->query($categoriesQuery);
+$categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
+
+$error = "";
+$successMessage = "";
+
+if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['confirm_password'])) {
+    $email = filter_var($_POST["email"], FILTER_VALIDATE_EMAIL);
     $password = $_POST["password"];
-    $confirmPassword = $_POST["confirm_password"];
+    $confirm_password = $_POST["confirm_password"];
 
-    // Check if passwords match
-    if ($password !== $confirmPassword) {
-        $error = "Error: Passwords do not match. Please try again.";
+    if (!$email) {
+        $error = "Invalid email format.";
+    } elseif ($password !== $confirm_password) {
+        $error = "Passwords do not match.";
     } else {
-        // Hash the password for security
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+        // Password hashing
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Store user information in a database or file
-        $successMessage = "Welcome you have been registered successfully!";
+        // Insert user into database
+        $query = "INSERT INTO users (email, password) VALUES (:email, :password)";
+        $statement = $db->prepare($query);
+        $statement->bindValue(':email', $email);
+        $statement->bindValue(':password', $hashed_password);
+
+        if ($statement->execute()) {
+            $successMessage = "Registration successful!";
+        } else {
+            $error = "Registration failed.";
+        }
     }
 }
 ?>
@@ -100,28 +119,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </li>
 
             <li>
-                <?php if (isset($error)): ?>
-                    <p><?= $error ?></p>
-                <?php endif; ?>
-            </li>
+                <form method="post" >
+                    <label for="email">Email:</label>
+                    <input type="email" name="email" required><br><br>
 
-            <li>
-                <?php if (isset($successMessage)): ?>
-                    <p><?= $successMessage ?></p>
-                <?php else: ?>
-                    <form action="" method="post">
-                        <label for="email">Email:</label>
-                        <input type="email" name="email" required><br><br>
+                    <label for="password">Password:</label>
+                    <input type="password" name="password" required><br><br>
 
-                        <label for="password">Password:</label>
-                        <input type="password" name="password" required><br><br>
+                    <label for="confirm_password">Confirm Password:</label>
+                    <input type="password" name="confirm_password" required><br><br>
 
-                        <label for="confirm_password">Confirm Password:</label>
-                        <input type="password" name="confirm_password" required><br><br>
-
-                        <input type="submit" value="Register">
-                    </form>
-                <?php endif; ?> 
+                    <input type="submit" value="Register">
+                </form>
             </li>
         </ul>
     </section>
