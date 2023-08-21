@@ -230,3 +230,14 @@ body {
 #edit-category li {
   list-style: none;
 }
+
+.register_text_grey {
+  font-style: italic;
+  color: grey;
+  margin: 0;
+  font-size: small;
+}
+
+.red_text {
+  color: rgb(227, 0, 0);
+}

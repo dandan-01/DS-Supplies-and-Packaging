@@ -115,23 +115,36 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
     <section class="center">
         <ul>
             <li>
-                <h2>User Registration</h2>
+                <h2 class="center">User Registration</h2>
             </li>
 
             <li>
-                <form method="post" >
+                <?php if (!empty($error)): ?>
+                    <h2 class="red_text"><?= $error ?></h2>
+                <?php endif; ?>
+
+                <form method="post" action="register_user.php" >
                     <label for="email">Email:</label>
-                    <input type="email" name="email" required><br><br>
+                    <input type="email" name="email" required>
+                    <p class="register_text_grey">Please include an '@' in the email address followed by a domain (ie gmail.com).</p><br>
 
                     <label for="password">Password:</label>
                     <input type="password" name="password" required><br><br>
 
                     <label for="confirm_password">Confirm Password:</label>
-                    <input type="password" name="confirm_password" required><br><br>
+                    <input type="password" name="confirm_password" required>
+                    <p class="register_text_grey">Please ensure that both passwords match.</p><br><br>
 
-                    <input type="submit" value="Register">
+                    <input id="submitbtn" type="submit" value="Register">
+
+                    <?php if (isset($successMessage)): ?>
+                            <h2 class="red_text"><?= $successMessage ?></h2>
+                            <a href="index.php">Go back to Home Page</a>
+                    <?php endif; ?>
                 </form>
             </li>
+
+
         </ul>
     </section>
     
