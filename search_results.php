@@ -20,7 +20,7 @@ $searchQuery = $_GET['search_query'];
 $categoryFilter = $_GET['category'];
 
 // Set N number of results per page
-$resultsPerPage = 8;
+$resultsPerPage = 100;
 
 // Calculate current page
 $page = isset($_GET['page']) ? $_GET['page'] : 1;

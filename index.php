@@ -121,7 +121,7 @@ function shorten200($content, $maxLength = 200) {
 
         <nav id="topright">
             <a href="register_user.php">Register</a>
-            <a href="index.php">Log In</a>
+            <a href="login.php">Log In</a>
             <a href="new_post.php">Cart</a>
         </nav>
     </header>

@@ -8,7 +8,6 @@
 
 ****************/
 
-require('connect.php');
 require('authenticate.php');
 
 // Fetch categories to populate AJAX search form drop-down list

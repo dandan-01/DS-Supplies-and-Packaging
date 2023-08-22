@@ -4,55 +4,16 @@
     
     Name: Danilyn Sanchez
     Date: Aug 21, 2023
-    Description: Register user page.
+    Description: Log in page.
 
 ****************/
 
-require('connect.php');
+require('authenticate.php');
 
 // Fetch categories to populate AJAX search form drop-down list
 $categoriesQuery = "SELECT * FROM categories";
 $categoriesStatement = $db->query($categoriesQuery);
 $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
-
-$error = "";
-$successMessage = "";
-
-if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_POST['confirm_password'])) {
-    $email = filter_var($_POST['email'], FILTER_VALIDATE_EMAIL);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-
-    // Check if the email is already in use
-    $query = "SELECT * FROM users WHERE email = :email";
-    $statement = $db->prepare($query);
-    $statement->bindValue(':email', $email);
-    $statement->execute();
-    $existingUser = $statement->fetch(PDO::FETCH_ASSOC);
-
-    if ($existingUser) {
-        $error = "Email already in use.";
-    } elseif (!$email) {
-        $error = "Invalid email format.";
-    } elseif ($password !== $confirm_password) {
-        $error = "Passwords do not match.";
-    } else {
-        // Password hashing
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-
-        // Insert user into database
-        $query = "INSERT INTO users (email, password) VALUES (:email, :password)";
-        $statement = $db->prepare($query);
-        $statement->bindValue(':email', $email);
-        $statement->bindValue(':password', $hashed_password);
-
-        if ($statement->execute()) {
-            $successMessage = "Registration successful!";
-        } else {
-            $error = "Registration failed.";
-        }
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -66,6 +27,7 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
     <title>Boxed N Loaded</title>
 </head>
 <body>
+    <!-- Remember that alternative syntax is good and html inside php is bad -->
     <nav id="adminnav">
         <h3>Welcome User!</h3>
         <a href="add_new_item.php">Add new item</a>
@@ -109,7 +71,7 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
 
         <nav id="topright">
             <a href="register_user.php">Register</a>
-            <a href="index.php">Log In</a>
+            <a href="login.php">Log In</a>
             <a href="new_post.php">Cart</a>
         </nav>
     </header>
@@ -124,38 +86,42 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
     <section class="center">
         <ul>
             <li>
-                <h2 class="center">User Registration</h2>
+                <h2 class="center">Login</h2>
             </li>
 
             <li>
-                <?php if (!empty($error)): ?>
-                    <h2 class="red_text"><?= $error ?></h2>
+                <?php if (isset($_SESSION['role'])): ?>
+                    <?php if ($_SESSION['role'] === "admin"): ?>
+                        <p>Currently logged in as admin</p>
+                        <form method="post" action="logout.php">
+                            <input class="center" type="submit" value="Logout">
+                        </form>
+                    <?php elseif ($_SESSION['role'] === "user"): ?>
+                        <p>Currently logged in as <?php echo $_SESSION['user_email']; ?></p>
+                        <form method="post" action="logout.php">
+                            <input class="center" type="submit" value="Logout">
+                        </form>
+                    <?php endif; ?>
+                <?php elseif (isset($_SESSION['login_error'])): ?>
+                    <h3 class="red_text"><?php echo $_SESSION['login_error']; ?></h3>
+                    <?php unset($_SESSION['login_error']); ?>
                 <?php endif; ?>
 
-                <form method="post" action="register_user.php" >
-                    <label for="email">Email:</label>
-                    <input type="email" name="email" required>
-                    <p class="register_text_grey">Please include an '@' in the email address followed by a domain (ie gmail.com).</p><br>
+                <?php if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')): ?>
+                    <form method="post" action="login.php">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" required><br><br>
 
-                    <label for="password">Password:</label>
-                    <input type="password" name="password" required><br><br>
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" required><br><br>
 
-                    <label for="confirm_password">Confirm Password:</label>
-                    <input type="password" name="confirm_password" required>
-                    <p class="register_text_grey">Please ensure that both passwords match.</p><br><br>
-
-                    <input id="submitbtn" type="submit" value="Register">
-
-                    <?php if (isset($successMessage)): ?>
-                            <h2 class="red_text"><?= $successMessage ?></h2>
-                            <a href="index.php">Go back to Home Page</a>
-                    <?php endif; ?>
-                </form>
+                        <input type="submit" value="Login">
+                    </form>
+                <?php endif; ?>
             </li>
-
-
         </ul>
     </section>
+    
     
 </body>
 </html>
