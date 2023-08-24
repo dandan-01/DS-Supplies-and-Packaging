@@ -78,13 +78,13 @@ function shorten200($content, $maxLength = 200) {
 </head>
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
-    <nav id="adminnav">
-        <h3>Welcome User!</h3>
+    <nav id="adminnav" >
+        <h3>To create products or categories -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
     </nav>
 
-    <header>
+    <header >
         <div id="logotitle">
             <a href="index.php">
                 <img src="imgs/box.jpg" alt="Box logo">
@@ -92,7 +92,6 @@ function shorten200($content, $maxLength = 200) {
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -122,11 +121,10 @@ function shorten200($content, $maxLength = 200) {
         <nav id="topright">
             <a href="register_user.php">Register</a>
             <a href="login.php">Login/Logout</a>
-            <a href="new_post.php">Cart</a>
         </nav>
     </header>
 
-    <nav id="productnav">
+    <nav id="productnav" >
         <a href="index.php"><h2>HOME</h2></a>
         <a href="category_header_page.php?category_name=Boxes"><h2>BOXES</h2></a>
         <a href="category_header_page.php?category_name=Paperbags"><h2>PAPERBAGS</h2></a>
@@ -173,5 +171,9 @@ function shorten200($content, $maxLength = 200) {
     </section>
 </div>
     
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
+
 </body>
 </html>

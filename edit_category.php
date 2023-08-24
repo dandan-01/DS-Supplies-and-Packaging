@@ -87,7 +87,6 @@ if (isset($_GET['category_id'])) {
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -115,9 +114,8 @@ if (isset($_GET['category_id'])) {
         </div>
 
         <nav id="topright">
-            <button>Register</button>
-            <a href="index.php">Log In</a>
-            <a href="new_post.php">Cart</a>
+            <a href="register_user.php">Register</a>
+            <a href="login.php">Login/Logout</a>
         </nav>
     </header>
 
@@ -138,36 +136,15 @@ if (isset($_GET['category_id'])) {
             </li>
 
             <li>
-                <input type="submit" id="update-category" name="update-category" value="Update Name">
-                <input type="submit" id="delete-category" name="delete_category" value="Delete">
+                <input type="submit" name="update-category" value="Update" onclick="return confirm('Are you sure you want to UPDATE the category name?')">
+                <input type="submit" name="delete_category" value="Delete" onclick="return confirm('Are you sure you want to DELETE this category?')">
             </li>
         </ul>
     </form>
 
-
-
-<!-- This Javascript <script> tag is going to be used for the dialogue boxes of Update + Delete buttons to ensure that the user wants to confirm the changes -->
-
-<script>
-// Get references to the buttons
-const updateButton = document.getElementById('update-category');
-const deleteButton = document.getElementById('delete-category');
-
-// Add event listeners to the buttons
-updateButton.addEventListener('click', function(event) {
-    const confirmed = confirm('Are you sure you want to CHANGE the name of this category?');
-    if (!confirmed) {
-        event.preventDefault(); // Cancel form submission if not confirmed
-    }
-});
-
-deleteButton.addEventListener('click', function(event) {
-    const confirmed = confirm('Are you sure you want to DELETE this category?');
-    if (!confirmed) {
-        event.preventDefault(); // Cancel form submission if not confirmed
-    }
-});
-</script>
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
 
 </body>
 </html>

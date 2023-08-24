@@ -127,7 +127,6 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -155,9 +154,8 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
         </div>
 
         <nav id="topright">
-            <button>Register</button>
-            <a href="index.php">Log In</a>
-            <a href="new_post.php">Cart</a>
+            <a href="register_user.php">Register</a>
+            <a href="login.php">Login/Logout</a>
         </nav>
     </header>
 
@@ -204,11 +202,17 @@ if ($_POST && !empty($_POST['product_name']) && !empty($_POST['product_descripti
             <li>
                 <label for="image">(optional) Upload Image:</label>
                 <input type="file" id="image" name="image">
+                <h5 class="red_text">Remember, only upload files within the projects imgs folder</h5>
             </li>
         
             <li>
                 <input id="submitbtn" type="submit" value="Submit">
             </li>
     </form>
+
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
+
 </body>
 </html>

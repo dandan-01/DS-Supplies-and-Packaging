@@ -89,7 +89,6 @@ $totalPages = ceil($totalResults / $resultsPerPage);
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -117,9 +116,8 @@ $totalPages = ceil($totalResults / $resultsPerPage);
         </div>
 
         <nav id="topright">
-            <button>Register</button>
-            <a href="index.php">Log In</a>
-            <a href="new_post.php">Cart</a>
+            <a href="register_user.php">Register</a>
+            <a href="login.php">Login/Logout</a>
         </nav>
     </header>
 
@@ -168,5 +166,9 @@ $totalPages = ceil($totalResults / $resultsPerPage);
         </div>
     <?php endif; ?>
     
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
+
 </body>
 </html>

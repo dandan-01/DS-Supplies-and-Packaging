@@ -4,7 +4,7 @@
     
     Name: Danilyn Sanchez
     Date: July 25, 2023
-    Description: Edit post page
+    Description: Edit post page.
 
 ****************/
 
@@ -126,6 +126,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $statement->bindValue(':category_id', $category_id);
             }
 
+            // Handle image removal
+            if (isset($_POST['delete_image']) && $_POST['delete_image'] === 'on') {
+                // Delete the image from the database 
+                $image_id = $post['image_id'] ?? null;
+
+                if ($image_id) {
+                    // Retrieve the image filename from the database
+                    $getImageQuery = "SELECT filename FROM images WHERE image_id = :image_id";
+                    $getImageStatement = $db->prepare($getImageQuery);
+                    $getImageStatement->bindValue(':image_id', $image_id);
+                    $getImageStatement->execute();
+                    $image = $getImageStatement->fetchColumn();
+
+                    // Delete the image record from the database
+                    $deleteImageQuery = "DELETE FROM images WHERE image_id = :image_id";
+                    $deleteImageStatement = $db->prepare($deleteImageQuery);
+                    $deleteImageStatement->bindValue(':image_id', $image_id);
+                    $deleteImageStatement->execute();
+
+                    // Remove the image_id association from the product record
+                    // Do NOT delete this, this is required to update so that the delte-image checkbox doesn't show up when there is no image_id associated
+                    $updateProductQuery = "UPDATE packagingsupplies SET image_id = NULL WHERE product_id = :product_id";
+                    $updateProductStatement = $db->prepare($updateProductQuery);
+                    $updateProductStatement->bindValue(':product_id', $product_id);
+                    $updateProductStatement->execute();
+                }
+            }
+
             // Execute the UPDATE.
             if ($statement->execute()) {
                 // Update the filename in the images table if a new image is uploaded
@@ -145,33 +173,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         } else {
             echo "Please provide a name and description for the product.";
-        }
-
-        // Handle image removal
-        if (isset($_POST['delete_image']) && $_POST['delete_image'] === 'on') {
-            // Delete the image from the database 
-            $image_id = $post['image_id'] ?? null;
-
-            if ($image_id) {
-                // Retrieve the image filename from the database
-                $getImageQuery = "SELECT filename FROM images WHERE image_id = :image_id";
-                $getImageStatement = $db->prepare($getImageQuery);
-                $getImageStatement->bindValue(':image_id', $image_id);
-                $getImageStatement->execute();
-                $image = $getImageStatement->fetchColumn();
-
-                // Delete the image record from the database
-                $deleteImageQuery = "DELETE FROM images WHERE image_id = :image_id";
-                $deleteImageStatement = $db->prepare($deleteImageQuery);
-                $deleteImageStatement->bindValue(':image_id', $image_id);
-                $deleteImageStatement->execute();
-
-                // Remove the image_id association from the product record
-                $updateProductQuery = "UPDATE packagingsupplies SET image_id = NULL WHERE product_id = :product_id";
-                $updateProductStatement = $db->prepare($updateProductQuery);
-                $updateProductStatement->bindValue(':product_id', $product_id);
-                $updateProductStatement->execute();
-            }
         }
 
     } elseif (isset($_POST['delete'])) {
@@ -217,7 +218,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -245,9 +245,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <nav id="topright">
-            <button>Register</button>
-            <a href="index.php">Log In</a>
-            <a href="new_post.php">Cart</a>
+            <a href="register_user.php">Register</a>
+            <a href="login.php">Login/Logout</a>
         </nav>
     </header>
 
@@ -310,11 +309,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php endif; ?>
 
                 <li>
-                    <input type="submit" name="update" value="Update Product" onclick="return confirm('Are you sure you want to UPDATE this post?')">
-                    <input type="submit" name="delete" value="Delete Product" onclick="return confirm('Are you sure you want to DELETE this post?')">
+                    <input type="submit" name="update" value="Update Product" onclick="return confirm('Are you sure you want to UPDATE this product?')">
+                    <input type="submit" name="delete" value="Delete Product" onclick="return confirm('Are you sure you want to DELETE this product?')">
                 </li>
             </ul>
         </form>
     </div>
 </body>
+
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
+
 </html>

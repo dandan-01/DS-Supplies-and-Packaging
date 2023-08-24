@@ -80,7 +80,6 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
 
             <a href="index.php">
                 <h1>Boxed N' Loaded</h1>
-                <br>
                 <h4><i>"Your go-to for Shipping Supplies!"</i></h4>
             </a>
         </div>
@@ -109,8 +108,7 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
 
         <nav id="topright">
             <a href="register_user.php">Register</a>
-            <a href="index.php">Log In</a>
-            <a href="new_post.php">Cart</a>
+            <a href="login.php">Login/Logout</a>
         </nav>
     </header>
 
@@ -157,5 +155,9 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
         </ul>
     </section>
     
+<footer>
+    <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
+</footer>
+
 </body>
 </html>
