@@ -8,7 +8,15 @@
 
 ****************/
 
-require('authenticate.php');
+session_start();
+require('connect.php');
+
+// Admin/user must be logged in to view this page
+if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+    $_SESSION['login_error'] = "Please log in to access this page.";
+    header("Location: login.php");
+    exit();
+}
 
 // Fetch categories to populate AJAX search form drop-down list
 $categoriesQuery = "SELECT * FROM categories";

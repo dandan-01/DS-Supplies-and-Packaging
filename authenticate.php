@@ -10,8 +10,6 @@
 
 session_start();
 
-require('connect.php');
-
 define('ADMIN_LOGIN', 'wally');
 define('ADMIN_PASSWORD', 'mypass');
 
@@ -48,13 +46,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST["password"];
 
     if (authenticateAdmin($username, $password)) {
-        header("Location: login.php"); 
-        exit();
+      // Admin authentication successful
     } elseif (authenticateUser($username, $password)) {
-        header("Location: login.php"); 
-        exit();
+        // User authentication successful
     } else {
         $_SESSION['login_error'] = "Invalid username or password.";
+        $_SESSION['redirect_url'] = $_SERVER['REQUEST_URI']; // Store the URL
         header("Location: login.php");
         exit();
     }

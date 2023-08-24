@@ -8,8 +8,15 @@
 
 ****************/
 
+session_start();
 require('connect.php');
-require('authenticate.php');
+
+// Admin/user must be logged in to view this page
+if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+    $_SESSION['login_error'] = "Please log in to access this page.";
+    header("Location: login.php");
+    exit();
+}
 
 // Fetch the product details 
 $product_id = $_GET['id'];
@@ -290,6 +297,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <li>
                     <label for="image">(optional) Upload Image:</label>
                     <input type="file" id="image" name="image">
+                    <h5 class="red_text">Remember, only upload files within the projects imgs folder</h5>
                 </li>
 
                 <!-- Delete image IF there is one -->

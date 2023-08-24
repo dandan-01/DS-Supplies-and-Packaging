@@ -8,7 +8,15 @@
 
 ****************/
 
+session_start();
 require('connect.php');
+
+// Admin/user must be logged in to view this page
+if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+    $_SESSION['login_error'] = "Please log in to access this page.";
+    header("Location: login.php");
+    exit();
+}
 
 // Fetch categories to populate AJAX search form drop-down list
 $categoriesQuery = "SELECT * FROM categories";
@@ -16,17 +24,17 @@ $categoriesStatement = $db->query($categoriesQuery);
 $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
 
 if (isset($_GET['category_id'])) {
-    $category_id = $_GET['category_id'];
+    $edit_category_id = $_GET['category_id'];
     
     // Fetch chosen category from database:
     $categoryQuery = "SELECT * FROM categories WHERE category_id = :category_id";
     $categoryStatement = $db->prepare($categoryQuery);
-    $categoryStatement->bindValue(':category_id', $category_id);
+    $categoryStatement->bindValue(':category_id', $edit_category_id);
     $categoryStatement->execute();
-    $category = $categoryStatement->fetch(PDO::FETCH_ASSOC);
+    $edit_category = $categoryStatement->fetch(PDO::FETCH_ASSOC);
 
     // Edit category name
-    if ($_POST && isset($_POST['update'])) {
+    if ($_POST && isset($_POST['update-category'])) {
         // Sanitize and filter user input
         $new_category_name = filter_input(INPUT_POST, 'new_category_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
         
@@ -34,7 +42,7 @@ if (isset($_GET['category_id'])) {
         $updateQuery = "UPDATE categories SET category_name = :new_category_name WHERE category_id = :category_id";
         $updateStatement = $db->prepare($updateQuery);
         $updateStatement->bindValue(':new_category_name', $new_category_name);
-        $updateStatement->bindValue(':category_id', $category_id);
+        $updateStatement->bindValue(':category_id', $edit_category_id); 
         
         if ($updateStatement->execute()) {
             header("Location: categories.php");
@@ -44,7 +52,7 @@ if (isset($_GET['category_id'])) {
         // Delete category
         $deleteQuery = "DELETE FROM categories WHERE category_id = :category_id";
         $deleteStatement = $db->prepare($deleteQuery);
-        $deleteStatement->bindValue(':category_id', $category_id);
+        $deleteStatement->bindValue(':category_id', $edit_category_id);
         
         if ($deleteStatement->execute()) {
             header("Location: categories.php"); 
@@ -120,20 +128,46 @@ if (isset($_GET['category_id'])) {
         <a href="category_header_page.php?category_name=Supplies"><h2>SUPPLIES</h2></a>
     </nav>
 
-    <h1>Edit "<?= $category['category_name']; ?>"</h1>
+    <h1>Edit "<?= $edit_category['category_name']; ?>"</h1>
 
     <form method="POST" id="edit-category">
         <ul>
             <li>
                 <label for="new_category_name">New Category Name:</label>
-                <input type="text" id="new_category_name" name="new_category_name" value="<?= $category['category_name']; ?>" required>
+                <input type="text" id="new_category_name" name="new_category_name" value="<?= $edit_category['category_name']; ?>" required>
             </li>
 
             <li>
-                <input type="submit" value="Update Name" onclick="return confirm('Are you sure you want to CHANGE the name of this category?')">
-                <input type="submit" name="delete_category" value="Delete" onclick="return confirm('Are you sure you want to DELETE this category?')">
+                <input type="submit" id="update-category" name="update-category" value="Update Name">
+                <input type="submit" id="delete-category" name="delete_category" value="Delete">
             </li>
         </ul>
     </form>
+
+
+
+<!-- This Javascript <script> tag is going to be used for the dialogue boxes of Update + Delete buttons to ensure that the user wants to confirm the changes -->
+
+<script>
+// Get references to the buttons
+const updateButton = document.getElementById('update-category');
+const deleteButton = document.getElementById('delete-category');
+
+// Add event listeners to the buttons
+updateButton.addEventListener('click', function(event) {
+    const confirmed = confirm('Are you sure you want to CHANGE the name of this category?');
+    if (!confirmed) {
+        event.preventDefault(); // Cancel form submission if not confirmed
+    }
+});
+
+deleteButton.addEventListener('click', function(event) {
+    const confirmed = confirm('Are you sure you want to DELETE this category?');
+    if (!confirmed) {
+        event.preventDefault(); // Cancel form submission if not confirmed
+    }
+});
+</script>
+
 </body>
 </html>

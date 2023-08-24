@@ -8,31 +8,38 @@
 
 ****************/
 
+session_start(); // Don't use require('authenticate.php') else won't work
+
 require('connect.php');
-require('authenticate.php');
 
-// Needs to be instantiated as an array to use in foreach loop
-$categories = [];
+// Admin/user must be logged in to view this page
+if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin')) {
+    $_SESSION['login_error'] = "Please log in to access this page.";
+    header("Location: login.php");
+    exit();
+}
 
-if ($_POST && !empty($_POST['category_name'])) {
-    // Sanitize and filter user input
-    $category_name = filter_input(INPUT_POST, 'category_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+// Handle form submission to add a new category
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!empty($_POST['category_name'])) {
+        // Sanitize and filter user input
+        $category_name = filter_input(INPUT_POST, 'category_name', FILTER_SANITIZE_FULL_SPECIAL_CHARS);
 
-    // Build SQL query and bind to the above sanitized values.
-    $query = "INSERT INTO categories (category_name) 
-          VALUES (:category_name)";
+        // Build SQL query and bind the sanitized values
+        $query = "INSERT INTO categories (category_name) VALUES (:category_name)";
+        $statement = $db->prepare($query);
 
-    $statement = $db->prepare($query);
+        // Bind values to parameters
+        $statement->bindValue(':category_name', $category_name);
 
-    // Bind values to the parameters
-    $statement->bindValue(':category_name', $category_name);
-
-    // Execute the INSERT.
-    // execute() will check for possible SQL injection and remove if necessary
-    if ($statement->execute()) {
-        echo "Success";
-        header('Location: categories.php');
-        exit;
+        // Execute the INSERT
+        if ($statement->execute()) {
+            // Redirect to the same page to avoid form resubmission
+            header('Location: categories.php');
+            exit();
+        } else {
+            echo "Error adding category.";
+        }
     }
 }
 
@@ -128,7 +135,11 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
     <section id="current-categories" class="padding-bottom">
         <ul>
             <li>
-                <h1>Current Categories</h1>
+                <h1 class="center">Current Categories</h1>
+                <p class="center red-text"><i>***Important! Please don't delete <u>Boxes, Paperbags, or Supplies</u> categories. <br>
+                They are needed for the HOME - BOXES - PAPERBAGS - SUPPLIES header! ***</i></p>
+
+                <p class="center">To test deletion please create a new category and delete that instead, thanks!</p>
             </li>
 
             <li>

@@ -8,6 +8,7 @@
 
 ****************/
 
+require('connect.php');
 require('authenticate.php');
 
 // Fetch categories to populate AJAX search form drop-down list
@@ -93,11 +94,13 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
                 <?php if (isset($_SESSION['role'])): ?>
                     <?php if ($_SESSION['role'] === "admin"): ?>
                         <p>Currently logged in as admin</p>
+                        <p>You now have CRUD privileges. Try clicking on the links at the top or editing a product.</p>
                         <form method="post" action="logout.php">
                             <input class="center" type="submit" value="Logout">
                         </form>
                     <?php elseif ($_SESSION['role'] === "user"): ?>
                         <p>Currently logged in as <?php echo $_SESSION['user_email']; ?></p>
+                        <p>You now have CRUD privileges. Try clicking on the links at the top or editing a product</p>
                         <form method="post" action="logout.php">
                             <input class="center" type="submit" value="Logout">
                         </form>
