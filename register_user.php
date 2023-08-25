@@ -132,14 +132,14 @@ if ($_POST && !empty($_POST['email']) && !empty($_POST['password']) && !empty($_
 
                 <form method="post" action="register_user.php" >
                     <label for="email">Email:</label>
-                    <input type="email" name="email" required>
+                    <input type="email" name="email" required size="50">
                     <p class="register_text_grey">Please include an '@' in the email address followed by a domain (ie gmail.com).</p><br>
 
                     <label for="password">Password:</label>
-                    <input type="password" name="password" required><br><br>
+                    <input type="password" name="password" required size="48"><br><br>
 
                     <label for="confirm_password">Confirm Password:</label>
-                    <input type="password" name="confirm_password" required>
+                    <input type="password" name="confirm_password" required size="40">
                     <p class="register_text_grey">Please ensure that both passwords match.</p><br><br>
 
                     <input id="submitbtn" type="submit" value="Register">

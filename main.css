@@ -11,11 +11,11 @@ body {
   padding-right: 20em;
   gap: 50px;
   background-color: rgb(18, 30, 99);
-  color: #4e45a1;
+  color: #5b50b8;
 }
 
   #adminnav a {
-    color: rgb(131, 131, 209);
+    color: rgb(135, 135, 226);
     text-decoration: none;
   }
   #adminnav a:hover {
@@ -177,7 +177,13 @@ body {
   padding: 10px;
 }
 
-#submitbtn {
+#submitbtn, #logout-btn, #login-btn {
+  background-color: rgb(17, 17, 190); 
+  color: white;
+  padding: 10px;
+}
+
+.blue-btn {
   background-color: rgb(17, 17, 190); 
   color: white;
   padding: 10px;
@@ -199,25 +205,30 @@ body {
   border: 1px solid #989898;
 }
 
+#create-user ul {
+  padding: 0 100px 10px 100px;
+  border: 1px solid #989898;
+}
+
 #current-categories li {
   list-style: none;
 }
 
-#current-categories table {
+#current-categories table, #current_users table {
   border-collapse: collapse;
 }
 
-  #current-categories th {
+  #current-categories th, #current_users th {
     border: 1px solid #635757;
     text-align: left;
     padding: 15px;
     background-color: #f2f2f2;
   }
 
-  #current-categories td {
+  #current-categories td, #current_users td {
     border: 1px solid #635757;
     text-align: left;
-    padding: 8px;
+    padding: 10px;
   }
 
 #edit-category {

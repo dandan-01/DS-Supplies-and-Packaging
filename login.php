@@ -91,16 +91,16 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
             <li>
                 <?php if (isset($_SESSION['role'])): ?>
                     <?php if ($_SESSION['role'] === "admin"): ?>
-                        <p>Currently logged in as admin</p>
-                        <p>You now have CRUD privileges. Try clicking on the links at the top or editing a product.</p>
+                        <h3>Currently logged in as admin</h3>
+                        <h4>You now have CRUD privileges. Try clicking on the links at the top or editing a product.</h4>
                         <form method="post" action="logout.php">
-                            <input class="center" type="submit" value="Logout">
+                            <input class="center" id="logout-btn" type="submit" value="Logout">
                         </form>
                     <?php elseif ($_SESSION['role'] === "user"): ?>
-                        <p>Currently logged in as <?php echo $_SESSION['user_email']; ?></p>
-                        <p>You now have CRUD privileges. Try clicking on the links at the top or editing a product</p>
+                        <h3>Currently logged in as <?php echo $_SESSION['user_email']; ?></h3>
+                        <h4>You now have CRUD privileges. Try clicking on the links at the top or editing a product</h4>
                         <form method="post" action="logout.php">
-                            <input class="center" type="submit" value="Logout">
+                            <input type="submit" id="logout-btn" class="center" value="Logout">
                         </form>
                     <?php endif; ?>
                 <?php elseif (isset($_SESSION['login_error'])): ?>
@@ -116,9 +116,12 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
                         <label for="password">Password:</label>
                         <input type="password" name="password" required><br><br>
 
-                        <input type="submit" value="Login">
+                        <input type="submit" id="login-btn" value="Login">
                     </form>
                 <?php endif; ?>
+
+                <p>Admin access [user = wally], [pass = mypass]</p>
+                <p>User access [user = test4@rrc.ca], [pass = 040]</p>
             </li>
         </ul>
     </section>

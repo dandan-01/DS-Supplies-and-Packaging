@@ -79,9 +79,10 @@ function shorten200($content, $maxLength = 200) {
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
     <nav id="adminnav" >
-        <h3>To create products or categories -></h3>
+        <h3>User/Admin access needed -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
+        <a href="manage_users.php">Manage Users (admin only)</a>
     </nav>
 
     <header >

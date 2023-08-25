@@ -134,10 +134,10 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
         <ul>
             <li>
                 <h1 class="center">Current Categories</h1>
-                <p class="center red-text"><i>***Important! Please don't delete <u>Boxes, Paperbags, or Supplies</u> categories. <br>
+                <p class="center red-text"><i>***Important! Please don't delete or update <u>Boxes, Paperbags, or Supplies</u> categories. <br>
                 They are needed for the HOME - BOXES - PAPERBAGS - SUPPLIES header! ***</i></p>
 
-                <p class="center">To test deletion please create a new category and delete that instead, thanks!</p>
+                <p class="center">To check the update/delete feature please create a new category or use a test object down below, thanks!</p>
             </li>
 
             <li>
@@ -157,7 +157,7 @@ $categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <p class="center"><i>Note: There will be gaps between IDs due to deletion testing<i></p>
+                <p class="center"><i>Note: There will be gaps between IDs due to deletion testing</i></p>
             </li>
         </ul>
     </section>
