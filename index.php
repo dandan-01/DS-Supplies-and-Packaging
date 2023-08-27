@@ -32,7 +32,6 @@ switch ($sortingOption) {
     case 'price_high_low':
         $orderBy = 'ORDER BY packagingsupplies.price DESC';
         break;
-    // Default case: Sort Alphabetically
     case 'alphabetical':
     default:
         $orderBy = 'ORDER BY packagingsupplies.product_name ASC';
@@ -55,15 +54,6 @@ if ($statement->rowCount() === 0) {
     $error = "<p>No products were found.</p>";
 }
 
-function shorten200($content, $maxLength = 200) {
-    if (strlen($content) > $maxLength) {
-        $excerpt = substr($content, 0, $maxLength) . '...';
-        return $excerpt;
-    } else {
-        return $content;
-    } //
-}
-
 ?>
 
 <!DOCTYPE html>
@@ -79,9 +69,10 @@ function shorten200($content, $maxLength = 200) {
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
     <nav id="adminnav" >
-        <h3>User/Admin access needed -></h3>
+        <h3>User/Admin access only -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
+        <a href="sorted_list.php">View Sorted list</a>
         <a href="manage_users.php">Manage Users (admin only)</a>
     </nav>
 
@@ -138,12 +129,13 @@ function shorten200($content, $maxLength = 200) {
         <div id="sort" class="center">
             <form action="index.php" method="get">
                 <label for="sort-select">Sort:</label>
-                <select id="sort-select" name="sort" onchange="this.form.submit()">
+                <select id="sort-select" name="sort" >
                     <option value="alphabetical" <?php if ($sortingOption === 'alphabetical') echo 'selected'; ?>>Alphabetically</option>
                     <option value="newly_added" <?php if ($sortingOption === 'newly_added') echo 'selected'; ?>>Newly Added</option>
                     <option value="price_low_high" <?php if ($sortingOption === 'price_low_high') echo 'selected'; ?>>Price: Low to High</option>
                     <option value="price_high_low" <?php if ($sortingOption === 'price_high_low') echo 'selected'; ?>>Price: High to Low</option>
                 </select>
+                <input type="submit" value="Sort">
             </form>
         </div>
 

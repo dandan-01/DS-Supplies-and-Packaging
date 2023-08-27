@@ -164,6 +164,8 @@ $totalPages = ceil($totalResults / $resultsPerPage);
                 <?php endif; ?>
             <?php endfor; ?>
         </div>
+    <?php elseif ($totalResults === 0): ?>
+        <p class="center">No results found.</p>
     <?php endif; ?>
     
 <footer>

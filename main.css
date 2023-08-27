@@ -214,18 +214,19 @@ body {
   list-style: none;
 }
 
-#current-categories table, #current_users table {
+/* lots of repeating, if have spare time clean this up by creating a universal class instead of individual ids */
+#current-categories table, #current_users table, #sorted_list table {
   border-collapse: collapse;
 }
 
-  #current-categories th, #current_users th {
+  #current-categories th, #current_users th, th {
     border: 1px solid #635757;
     text-align: left;
     padding: 15px;
     background-color: #f2f2f2;
   }
 
-  #current-categories td, #current_users td {
+  #current-categories td, #current_users td, td {
     border: 1px solid #635757;
     text-align: left;
     padding: 10px;

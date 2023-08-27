@@ -4,7 +4,7 @@
     
     Name: Danilyn Sanchez
     Date: Aug 24, 2023
-    Description: Manage users CRUD page.
+    Description: Manage users page. 
 
 ****************/
 

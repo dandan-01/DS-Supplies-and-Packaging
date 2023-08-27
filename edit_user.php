@@ -1,6 +1,20 @@
 <?php
+
+/*******w******** 
+    
+    Name: Danilyn Sanchez
+    Date: Aug 25, 2023
+    Description: Edit user page.
+
+****************/
+
 session_start();
 require('connect.php');
+
+// Fetch categories to populate AJAX search form drop-down list
+$categoriesQuery = "SELECT * FROM categories";
+$categoriesStatement = $db->query($categoriesQuery);
+$categories = $categoriesStatement->fetchAll(PDO::FETCH_ASSOC);
 
 // Check if the user is logged in and is an admin
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
@@ -8,47 +22,43 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
     exit;
 }
 
-// Process form submission for editing user
-if (isset($_POST['edit_user'])) {
-    $user_id = $_POST['user_id'];
-    $new_email = $_POST['new_email'];
-    $new_password = $_POST['new_password'];
-
-    // Update user email and/or password
-    $updateQuery = "UPDATE users SET email = :email, password = :password WHERE user_id = :user_id";
-    $updateStatement = $db->prepare($updateQuery);
-    $updateStatement->bindValue(':email', $new_email);
-    $updateStatement->bindValue(':password', password_hash($new_password, PASSWORD_DEFAULT));
-    $updateStatement->bindValue(':user_id', $user_id);
-
-    if ($updateStatement->execute()) {
-        $edit_success_message = "User information updated successfully.";
-    } else {
-        $edit_error_message = "Failed to update user information.";
-    }
-}
-
-// Process form submission for deleting user
-if (isset($_POST['delete_user'])) {
-    $user_id = $_POST['user_id'];
-
-    // Delete user
-    $deleteQuery = "DELETE FROM users WHERE user_id = :user_id";
-    $deleteStatement = $db->prepare($deleteQuery);
-    $deleteStatement->bindValue(':user_id', $user_id);
-
-    if ($deleteStatement->execute()) {
-        $delete_success_message = "User deleted successfully.";
-    } else {
-        $delete_error_message = "Failed to delete user.";
-    }
-}
-
 // Fetch user data
-$query = "SELECT user_id, email FROM users";
-$statement = $db->prepare($query);
-$statement->execute();
-$users = $statement->fetchAll(PDO::FETCH_ASSOC);
+if (isset($_GET['user_id'])) {
+    $edit_user_id = $_GET['user_id'];
+
+    $userQuery = "SELECT * FROM users WHERE user_id = :user_id";
+    $userStatement = $db->prepare($userQuery);
+    $userStatement->bindValue(':user_id', $edit_user_id);
+    $userStatement->execute();
+    $edit_user = $userStatement->fetch(PDO::FETCH_ASSOC);
+
+    // Update user
+    if ($_POST && isset($_POST['update-user'])) {
+        // Sanitize and filter user input
+        $new_email = filter_input(INPUT_POST, 'new_email', FILTER_VALIDATE_EMAIL);
+
+        // Update the user's email in the database
+        $updateQuery = "UPDATE users SET email = :new_email WHERE user_id = :user_id";
+        $updateStatement = $db->prepare($updateQuery);
+        $updateStatement->bindValue(':new_email', $new_email);
+        $updateStatement->bindValue(':user_id', $edit_user_id); 
+
+        if ($updateStatement->execute()) {
+            header("Location: manage_users.php");
+            exit;
+        }
+    } elseif (isset($_POST['delete_user'])) {
+        // Delete user
+        $deleteQuery = "DELETE FROM users WHERE user_id = :user_id";
+        $deleteStatement = $db->prepare($deleteQuery);
+        $deleteStatement->bindValue(':user_id', $edit_user_id);
+
+        if ($deleteStatement->execute()) {
+            header("Location: manage_users.php");
+            exit;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -117,36 +127,21 @@ $users = $statement->fetchAll(PDO::FETCH_ASSOC);
         <a href="category_header_page.php?category_name=Supplies"><h2>SUPPLIES</h2></a>
     </nav>
 
-    <h1>Edit Users</h1>
+    <h1>Edit "<?= $edit_user['email']; ?>"</h1>
 
-    <table class="center">
-        <tr>
-            <th>User ID</th>
-            <th>Email</th>
-            <th>Edit</th>
-            <th>Delete</th>
-        </tr>
-        <?php foreach ($users as $user): ?>
-            <tr>
-                <td><?= $user['user_id']; ?></td>
-                <td><?= $user['email']; ?></td>
-                <td>
-                    <form method="POST">
-                        <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
-                        <input type="text" name="new_email" placeholder="New Email" required>
-                        <input type="password" name="new_password" placeholder="New Password" required>
-                        <button type="submit" name="edit_user">Edit</button>
-                    </form>
-                </td>
-                <td>
-                    <form method="POST" onsubmit="return confirm('Are you sure you want to delete this user?');">
-                        <input type="hidden" name="user_id" value="<?= $user['user_id']; ?>">
-                        <button type="submit" name="delete_user">Delete</button>
-                    </form>
-                </td>
-            </tr>
-        <?php endforeach; ?>
-    </table>
+    <form method="POST" id="edit-user" class="center">
+        <ul>
+            <li>
+                <label for="new_email">Update Email:</label>
+                <input type="email" id="new_email" name="new_email" value="<?= $edit_user['email']; ?>" required>
+            </li>
+            
+            <li>
+                <input type="submit" name="update-user" value="Update" onclick="return confirm('Are you sure you want to update this user?')">
+                <input type="submit" name="delete_user" value="Delete" onclick="return confirm('Are you sure you want to delete this user?')">
+            </li>
+        </ul>
+    </form>
 
 <footer>
     <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>
