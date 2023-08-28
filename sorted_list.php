@@ -1,5 +1,13 @@
 <?php
 
+/*******w******** 
+    
+    Name: Danilyn Sanchez
+    Date: Aug 27, 2023
+    Description: Sorting list of existing products in the database.
+
+****************/
+
 session_start();
 require('connect.php');
 
@@ -10,17 +18,29 @@ if (!isset($_SESSION['user_id']) && (!isset($_SESSION['role']) || $_SESSION['rol
     exit();
 }
 
-// Fetch products based on sorting option
-$sortingOption = isset($_GET['sort']) ? $_GET['sort'] : 'product_name';
+$orderBy = ''; // Needs to be initialized
+$sortingOption = isset($_GET['sort']) ? $_GET['sort'] : ''; // Retrieve selected sorting option
 
-// Define valid sorting columns
-$validSortingColumns = ['product_name', 'price', 'timestamp', 'category_id'];
-
-if (!in_array($sortingOption, $validSortingColumns)) {
-    $sortingOption = 'product_name'; // Default to sorting by product name
+// Determine the sorting based on the selected option
+switch ($sortingOption) {
+    case 'product_name_az':
+        $orderBy = 'product_name ASC';
+        break;
+    case 'recently_updated':
+        $orderBy = 'timestamp DESC';
+        break;
+    case 'price_low_high':
+        $orderBy = 'price ASC';
+        break;
+    case 'price_high_low':
+        $orderBy = 'price DESC';
+        break;
+    // Default case: Sort by product name A-Z
+    default:
+        $orderBy = 'product_name ASC';
 }
 
-$query = "SELECT * FROM packagingsupplies ORDER BY $sortingOption DESC";
+$query = "SELECT * FROM packagingsupplies ORDER BY $orderBy";
 $statement = $db->prepare($query);
 $statement->execute();
 $products = $statement->fetchAll(PDO::FETCH_ASSOC);
@@ -111,24 +131,28 @@ $products = $statement->fetchAll(PDO::FETCH_ASSOC);
                         <tr>
                             <td><?= $product['product_name']; ?></td>
                             <td>$<?= $product['price']; ?></td>
-                            <td><?= $product['timestamp']; ?></td>
+                            <td><?= date('F j, Y g:i A', strtotime($product['timestamp'])); ?></td>
                             <td><?= $product['category_id']; ?></td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
         </li>
-        
-        <li>
-            <select id="sort-select" name="sort" onchange="this.form.submit()">
-                <option value="product_name" <?php if ($sortingOption === 'product_name') echo 'selected'; ?>>Product Name</option>
-                <option value="price" <?php if ($sortingOption === 'price') echo 'selected'; ?>>Price</option>
-                <option value="timestamp" <?php if ($sortingOption === 'timestamp') echo 'selected'; ?>>Timestamp</option>
-                <option value="category_id" <?php if ($sortingOption === 'category_id') echo 'selected'; ?>>Category ID</option>
-            </select>
-        </li>
-        
     </section>
+
+    <section class="center">
+        <form action="sorted_list.php" method="get">
+            <label for="sort-select">Sort:</label>
+            <select id="sort-select" class="center-select" name="sort">
+                <option value="product_name_az" <?php if ($sortingOption === 'product_name_az') echo 'selected'; ?>>Product name A-Z</option>
+                <option value="recently_updated" <?php if ($sortingOption === 'recently_updated') echo 'selected'; ?>>Most Recently Updated</option>
+                <option value="price_low_high" <?php if ($sortingOption === 'price_low_high') echo 'selected'; ?>>Price Low to High</option>
+                <option value="price_high_low" <?php if ($sortingOption === 'price_high_low') echo 'selected'; ?>>Price High to Low</option>
+            </select>
+            <input type="submit" value="Sort">
+        </form>
+    </section>
+    
     
 <footer>
     <h5>Copyright &copy; 2023 Danilyn Sanchez. All rights reserved.</h5>

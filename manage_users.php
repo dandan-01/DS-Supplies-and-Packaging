@@ -79,9 +79,10 @@ if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
     <nav id="adminnav" >
-        <h3>User/Admin access needed -></h3>
+        <h3>User/Admin access only -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
+        <a href="sorted_list.php">View Sorted list</a>
         <a href="manage_users.php">Manage Users (admin only)</a>
     </nav>
 

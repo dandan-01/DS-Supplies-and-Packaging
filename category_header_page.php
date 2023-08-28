@@ -44,10 +44,12 @@ if (isset($_GET['category_name'])) {
 </head>
 <body>
     <!-- Remember that alternative syntax is good and html inside php is bad -->
-    <nav id="adminnav">
-        <h3>Welcome User!</h3>
+    <nav id="adminnav" >
+        <h3>User/Admin access only -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
+        <a href="sorted_list.php">View Sorted list</a>
+        <a href="manage_users.php">Manage Users (admin only)</a>
     </nav>
 
     <header>

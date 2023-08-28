@@ -73,10 +73,12 @@ if (isset($_GET['category_id'])) {
     <title>Boxed N Loaded | Edit <?= $category['category_name']; ?></title>
 </head>
 <body>
-    <nav id="adminnav">
-        <h3>Welcome User!</h3>
+    <nav id="adminnav" >
+        <h3>User/Admin access only -></h3>
         <a href="add_new_item.php">Add new item</a>
         <a href="categories.php">Create/Update Category</a>
+        <a href="sorted_list.php">View Sorted list</a>
+        <a href="manage_users.php">Manage Users (admin only)</a>
     </nav>
 
     <header>
